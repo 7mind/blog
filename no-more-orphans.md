@@ -147,15 +147,16 @@ Oh no, we broke Scala! Seems like our attempts at creating optional instances ju
 
 Why does Scalac break when trying to find implicits for `MyBox`? Following [implicit priority](http://eed3si9n.com/revisiting-implicits-without-import-tax),
 the compiler will eventually try to search `MyBox`'s companion object for suitable implicits, it will check ALL implicit definitions,
-and if it finds any classes it doesn't know about in an `implicit def`s argument or result type, it will loudly complain an abort compilation.
-To proceed, we need to fool scalac somehow, we need a way to _hide_ the real type of our implicits when a required library is missing,
-but at the same time _reveal_ the type if it's present so that it can be picked up by the implicit search.
+and if it finds any classes it doesn't know about in implicits' arguments or result type, it will loudly complain and abort compilation.
+
+To proceed, we need to fool Scalac somehow, we need a way to _hide_ the real type of our implicits when a required library is missing,
+but at the same time _reveal_ the type if it's present, so that it can be picked up by the implicit search.
 
 
 Optional Typeclass Instances
 ----------------------------
 
-Naive ways of hiding the type won't work – generic parametrization _will_ successfully obscure the type from bytecode, the return type will become `java.Object`,
+Naive ways of hiding the type won't work – generic parametrization _will_ successfully obscure the type  bytecode, the return type will become `java.Object`,
 but the Scala compiler will see through it and crash anyway. 
 
 ```scala
@@ -171,7 +172,7 @@ trait MyBoxFunctor[F[_[_]]] {
 ```
 
 The type must be bound late, after Scalac's done inspecting `MyBox`'s implicits. We need a type-level function to provide
-us the correct type when the library is present and pass otherwise. That function is surprisingly easy to write though!
+us the correct type when the library is present and pass otherwise. This function is surprisingly easy to write though!
 
 ```scala
 class GimmeCatsFunctor[Functor[F[_]]]
@@ -191,7 +192,7 @@ implicit def optionalCatsFunctorForMyBox[F[_[_]]](implicit gimme: GimmeCatsFunct
 // works
 ```
 
-This handles defining optional instances of _foreign_ typeclasses for library types. Instances of _library_ typeclasses for foreign types will look similar:
+This handles defining optional instances of _foreign_ typeclasses for library types. Instances of _library_ typeclasses for foreign types look similar:
 
 ```scala
 object MyMonad {
@@ -211,10 +212,10 @@ private object CatsMonad {
 ```
 
 After we 'assign' `M` to be `cats.Monad`, we summon it accordingly, then use `asInstanceOf` on the result since we already know the type underneath.
-We never need an actual instance of `CatsMonad`, so we can set its instance to `null` and save our users a heap allocation, making all of this machinery private
-ensures there's no way to mess up our scheme and cause a failed cast. 
+We never need an actual instance of `CatsMonad`, so we can set its instance to `null` and save our users a heap allocation.
+Lastly, making all of this machinery `private` ensures there's no way to mess up our scheme and cause a failed cast. 
 
-These two patterns let you define Optional non-orphan instances that will just work with no imports when users need them.
+These two patterns let us define `Optional` non-orphan instances that will just work with no imports when users need them.
 
 However, there's still a class of implicits that has to be treated specially – implicits that implement multiple
 typeclasses, with signatures like `ClassA[T] with ClassB[T]`.
@@ -255,7 +256,9 @@ object WithCats {
 However, a project without cats would break down when using any implicits for `MyBox`:
 
 ```scala
-implicitly[MyMonad[Box]]
+object WithoutCats {
+  implicitly[MyMonad[Box]]
+}
 // [error] Symbol 'type cats.Semigroupal' is missing from the classpath.
 // [error] This symbol is required by 'trait mylib.ImpllSemigroupalSemigroupKInvariant'.
 ```
@@ -303,7 +306,9 @@ until the implicit is actually considered – and the `haveCats` guard ensures i
 We've unbroken the non-cats project now:
 
 ```scala
-implicitly[MyMonad[Box]] // success!
+object WithoutCats {
+  implicitly[MyMonad[Box]] // success!
+}
 ```
 
 There's one minor oddity left, our instance is not being found when summoned as an intersection type:
@@ -316,9 +321,10 @@ object WithCats {
 // [error] implicitly[Invariant[MyBox] with Semigroupal[MyBox]]
 ```
 
-This time it's an actual [scala bug](https://github.com/scala/bug/issues/11502). Fortunately for us, it can be fixed by
-seemingly no-op transformations such as declaring result type as `X with X`, applying `type Id[A] = A` type alias or presumably
-with any other construct that actually does nothing to the type:
+This time it's an actual [scala bug](https://github.com/scala/bug/issues/11502).
+
+Fortunately for us, it can be fixed by seemingly no-op transformations, such as declaring result type as `X with X`,
+applying `type Id[A] = A` type alias or presumably with any other construct that actually does nothing to the type:
 
 ```scala
 type OptionalInstance[A] = A
