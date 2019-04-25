@@ -156,7 +156,7 @@ but at the same time _reveal_ the type if it's present, so that it can be picked
 Optional Typeclass Instances
 ----------------------------
 
-Naive ways of hiding the type won't work – generic parametrization _will_ successfully obscure the type  bytecode, the return type will become `java.Object`,
+Naive ways of hiding the type won't work – generic parametrization _will_ successfully obscure the type in bytecode, the return type will become `java.Object`,
 but the Scala compiler will see through it and crash anyway. 
 
 ```scala
