@@ -351,6 +351,6 @@ and [`MyMonad`](https://github.com/7mind/no-more-orphans/blob/master/mylib/src/m
 What libraries currently use this pattern?
 
 - [logstage](https://izumi.7mind.io/latest/release/doc/logstage/index.html) - uses this trick to provide `cats` and `ZIO`-friendly structural logging algebras out of the box without making either a mandatory dependency.
-- [distage](https://izumi.7mind.io/latest/release/doc/distage/index.html) - uses it to support dependency injection for [cats.effect.Resource](https://typelevel.org/cats-effect/datatypes/resource.html), cats `IO` and `ZIO` out-of-the-box, while still being perfectly usable without effect wrappers.
+- [distage](https://izumi.7mind.io/latest/release/doc/distage/index.html) - uses it to support dependency injection [for](https://izumi.7mind.io/latest/release/doc/distage/basics.html#resource-bindings-lifecycle) [cats.effect.Resource](https://typelevel.org/cats-effect/datatypes/resource.html), cats `IO` and `ZIO` out-of-the-box, while still being perfectly usable without effect wrappers.
 
 We hope more libraries follow and reduce the wildcard import tax on the community in favor of optional typeclass instances! 
