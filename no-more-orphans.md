@@ -348,5 +348,3 @@ What libraries currently use this pattern?
 - [distage](https://izumi.7mind.io/latest/release/doc/distage/index.html) - uses it to support dependency injection for [cats.effect.Resource](https://typelevel.org/cats-effect/datatypes/resource.html), cats `IO` and `ZIO` out-of-the-box, while still being perfectly usable without effect wrappers.
 
 We hope more libraries follow and reduce the wildcard import tax on the community in favor of optional typeclass instances! 
-
-Brought to you by the crew of [7mind.io](https://7mind.io)
