@@ -306,3 +306,43 @@ section {
     display: none;
   }
 }
+
+html {
+    background-color: #1d1f20 !important;
+}
+html, body, input, textarea, select, button {
+    background-color: #1d1f20;
+}
+html, body, input, textarea, select, button {
+    border-color: #686868;
+    color: #ffffff;
+}
+table {
+    border-color: #5b5b5b;
+}
+::placeholder {
+    color: #dfd9cd;
+}
+::selection {
+    background-color: #006ef5;
+    color: #ffffff;
+}
+::-moz-selection {
+    background-color: #006ef5;
+    color: #ffffff;
+}
+input:-webkit-autofill,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+    background-color: #656d00 !important;
+    color: #ffffff !important;
+}
+
+.jfk-bubble {
+    background-color: #000000 !important;
+}
+.vimvixen-hint {
+    background-color: #946400 !important;
+    border-color: #ffd317 !important;
+    color: #fffff0 !important;
+}
