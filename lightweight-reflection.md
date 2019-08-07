@@ -194,20 +194,31 @@ object Variance {
 So, we will identify nongeneric types using their fully qualified names. A type may have a prefix (in case it's a PDT) and type boundaries (in case it's an abstract type parameter):
 
 ```scala
-case class NameReference(ref: String, boundaries: Boundaries, prefix: Option[AppliedReference]) extends AppliedNamedReference
+case class NameReference(
+    ref: String,
+    boundaries: Boundaries,
+    prefix: Option[AppliedReference]
+  )extends AppliedNamedReference
 ```
 
 Now we may define reference for a generic:
 
 ```scala
 case class TypeParam(ref: LightTypeTag, variance: Variance)
-case class FullReference(ref: String, parameters: List[TypeParam],  prefix: Option[AppliedReference]) extends AppliedNamedReference
+case class FullReference(
+    ref: String,
+    parameters: List[TypeParam],
+    prefix: Option[AppliedReference]
+  ) extends AppliedNamedReference
 ```
 
 And now we may define a type lambda:
 
 ```scala
-case class Lambda(input: List[LambdaParameter], output: LightTypeTag) extends LightTypeTag
+case class Lambda(
+    input: List[LambdaParameter],
+    output: LightTypeTag
+  ) extends LightTypeTag
 case class LambdaParameter(name: String)
 ```
 
@@ -222,11 +233,22 @@ And here comes structural type:
 ```scala
 sealed trait RefinementDecl
 object RefinementDecl {
-  case class Signature(name: String, input: List[AppliedReference], output: AppliedReference) extends RefinementDecl
-  case class TypeMember(name: String, ref: LightTypeTag) extends RefinementDecl
+  case class Signature(
+    name: String,
+    input: List[AppliedReference],
+    output: AppliedReference
+  ) extends RefinementDecl
+
+  case class TypeMember(
+    name: String,
+    ref: LightTypeTag
+  ) extends RefinementDecl
 }
 
-case class Refinement(reference: AppliedReference, decls: Set[RefinementDecl]) extends AppliedReference
+case class Refinement(
+    reference: AppliedReference,
+    decls: Set[RefinementDecl]
+  ) extends AppliedReference
 ```
 
 This model is not completely correct (e.g. it's better to use a `NonEmptyList` in `FullReference`, etc, etc). Though it may do the job.
