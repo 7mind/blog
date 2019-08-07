@@ -164,7 +164,7 @@ We want to use a macro to statically generate non-ambigious type identifiers. An
 
 Essentially, we have two primary forms of our types, applied and unapplied. So, let's encode this:
 
-```
+```scala
 sealed trait LightTypeTag
 sealed trait AppliedReference extends LightTypeTag
 sealed trait AppliedNamedReference extends LightTypeTag
@@ -172,7 +172,7 @@ sealed trait AppliedNamedReference extends LightTypeTag
 
 Now we may define helper structures, describing type bounds and variance:
 
-```
+```scala
 sealed trait Boundaries
 object Boundaries {
   case class Defined(bottom: LightTypeTag, top: LightTypeTag) extends Boundaries
@@ -193,41 +193,37 @@ object Variance {
 
 So, we will identify nongeneric types using their fully qualified names. A type may have a prefix (in case it's a PDT) and type boundaries (in case it's an abstract type parameter):
 
-```
+```scala
 case class NameReference(ref: String, boundaries: Boundaries, prefix: Option[AppliedReference]) extends AppliedNamedReference
 ```
 
 Now we may define reference for a generic:
 
-```
+```scala
 case class TypeParam(ref: LightTypeTag, variance: Variance)
 case class FullReference(ref: String, parameters: List[TypeParam],  prefix: Option[AppliedReference]) extends AppliedNamedReference
 ```
 
 And now we may define a type lambda:
 
-```
+```scala
 case class Lambda(input: List[LambdaParameter], output: LightTypeTag) extends LightTypeTag
 case class LambdaParameter(name: String)
 ```
 
 The compound type is simple:
 
-```
+```scala
 case class IntersectionReference(refs: Set[AppliedNamedReference]) extends AppliedReference
 ```
 
 And here comes structural type:
 
-```
+```scala
 sealed trait RefinementDecl
-
 object RefinementDecl {
-
   case class Signature(name: String, input: List[AppliedReference], output: AppliedReference) extends RefinementDecl
-
   case class TypeMember(name: String, ref: LightTypeTag) extends RefinementDecl
-
 }
 
 case class Refinement(reference: AppliedReference, decls: Set[RefinementDecl]) extends AppliedReference
