@@ -33,7 +33,7 @@ check(Right("xxx"))
 //↳value Right(xxx) is a subtype of Either[Int, Object]: scala.util.Right[Nothing,String]
 ```
 
-Type tags let you do lot more. Essentially, `scala-reflect` and TypeTag machinery are chunks of internal compiler data structures and tools exposed directly to the user. Though the most important operations are identity check (`=:=`) and subtype check (`<:<`).
+Type tags let you do lot more. Essentially, `scala-reflect` and `TypeTag` machinery are chunks of internal compiler data structures and tools exposed directly to the user. Though the most important operations are identity check (`=:=`) and subtype check (`<:<`).
 
 `TypeTag` concept is a cornerstone for our project --- [distage](https://izumi.7mind.io/latest/release/doc/distage/index.html) --- smart module system for Scala, featuring a solver and a dependency injection mechanism.
 
