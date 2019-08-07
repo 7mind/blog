@@ -3,7 +3,7 @@ Lightweight Scala Reflection and why Dotty needs TypeTags reimplemented
 
 [Type tags](https://docs.scala-lang.org/overviews/reflection/typetags-manifests.html) are one of the most attractive features of Scala.
 
-They allow you to overcome type erasure. They allow you to check equality subtyping and equality. Here is an example:
+They allow you to overcome type erasure. They allow you to check subtyping and equality. Here is an example:
 
 ```scala
 import scala.reflect.runtime.universe._
