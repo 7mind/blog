@@ -251,7 +251,7 @@ case class Refinement(
   ) extends AppliedReference
 ```
 
-This model is not completely correct (e.g. it's better to use a `NonEmptyList` in `FullReference`, etc, etc). Though it may do the job.
+This model is not completely correct (e.g. it's better to use a `NonEmptyList` in `FullReference`, etc, etc). Though it may do the job. Also it provides identity check for free in case we follow some simple rules while building our tags.
 
 Feel free to propose improvements.
 
