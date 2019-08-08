@@ -404,6 +404,8 @@ val targs = tpe.etaExpand.typeParams
 // List[reflect.runtime.universe.Symbol] = List(type A)
 ```
 
+So, we may reconstruct each base type using type parameters to populate the `context` for `makeRef`.
+
 ## The rest of the damn Owl
 
 I provided some basic insights into the problem. In case you wish to look at the full implementation, you may find it [in our repository](https://github.com/7mind/izumi/tree/feature/light-type-tags-wip0/fundamentals/fundamentals-reflection/src/main/scala/com/github/pshirshov/izumi/fundamentals/reflection/macrortti). It has 2K+ LoC and has all the necessary features implemented. Also there are some logging facilities allowing you to get a detailed log of what happens during subtype checks.
