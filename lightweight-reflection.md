@@ -331,8 +331,8 @@ def makeRef(tpe: Type, context: Map[String, LambdaParameter]): AbstractReference
 
 Also we need an API allowing us to apply and partially apply a lambda. This will be the cornerstoune of our type tag combinators:
 
-```
-def applyLambda(lambda: Lambda, parameters: Map[String, AbstractReference]): AbstractReference = ???
+```scala
+def applyLambda(lambda: Lambda, parameters: Map[String, AbstractReference]): AbstractReference
 ```
 
 This method should recursively replace all the references to lambda arguments with corresponding type references from `parameters` map. So ```apply(λ %0, %1 → Map[%0, %1], Int)``` becomes ```λ %0 → Map[Int, %0]```. This job is mostly mechanical.
