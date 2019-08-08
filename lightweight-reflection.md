@@ -129,7 +129,7 @@ This example prints
 Now we may see that:
 
 - `Nothing` has disappeared out of `T[Nothing]`,
-- We've successfully circumvented Scala's syntactic limitations and got a weak type tag for our unapplied `type Example[K]`! It's an undefined but logical and very useful behaviour,
+- We've successfully circumvented Scala's syntactic limitations and got a weak type tag for our unapplied `type T1[K]`! It's an undefined but logical and very useful behaviour,
 - Scala can expand all the nested lambdas into a single lambda.
 
 ### Better approach
