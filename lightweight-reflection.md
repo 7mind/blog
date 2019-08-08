@@ -62,10 +62,10 @@ Unfortunately, current TypeTag implementation is flawed:
 - They suffer many [concurrency issues](https://github.com/scala/bug/issues/10766) and it's not so trivial to fix them. In our case TypeTags were occasionaly failing subtype checks (`child <:< parent`) during `scala-reflect` initialization even if we synchronize on literally everything,
 - `scala-reflect` needs *seconds* to initialize.
 
-Moreover, it's still unclear if Scala 3 will support TypeTag concept or not.
+Moreover, it's still unclear if Scala 3 will support `TypeTag`s or not.
 Some people say it's too hard and recommend to write a custom macro to replace TypeTags for in Scala 3 / Dotty when it's necessary.
 
-So, we tried to implement our own lightweight TypeTag replacement with a macro. It's doable. It works. Though it's overcomplicated and there are many subtle discrepancies between Scala model and our model. So we still hope that Dotty team will consider supporint TypeTags in Scala 3. Currently our implementation supports Scala 2.12/2.13 though it's possible to port it to Dotty and we are going to do it in foreseeable future.
+So, we tried to implement our own lightweight TypeTag replacement with a macro. It's doable. It works. Though it's overcomplicated and there are many subtle discrepancies between Scala model and our model. So we still hope that Dotty team will consider supporting TypeTags in Scala 3. Currently our implementation supports Scala 2.12/2.13 though it's possible to port it to Dotty and we are going to do it in foreseeable future.
 
 ## What we need
 
@@ -251,9 +251,8 @@ case class Refinement(
   ) extends AppliedReference
 ```
 
-This model is not completely correct (e.g. it's better to use a `NonEmptyList` in `FullReference`, etc, etc). Though it may do the job. Also it provides identity check for free in case we follow some simple rules while building our tags.
+This model is not completely correct (e.g. it's better to use a `NonEmptyList` in `FullReference`, etc, etc). Though it may do the job. Also it provides identity check for free in case we follow some simple rules while building our tags. I would be happy to get any improvement proposals.
 
-Feel free to propose improvements.
 
 ## The logic behind
 
