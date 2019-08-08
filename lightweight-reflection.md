@@ -37,7 +37,7 @@ Type tags let you do lot more. Essentially, `scala-reflect` and `TypeTag` machin
 
 `TypeTag` concept is a cornerstone for our project --- [distage](https://izumi.7mind.io/latest/release/doc/distage/index.html) --- smart module system for Scala, featuring a solver and a dependency injection mechanism.
 
-Type tags allows us to turn an arbitrary function into an entity we can introspect at both compile time and run time:
+Type tags allows us to turn an arbitrary function into an entity we can introspect at both compile time and run time ([Scastie](https://scastie.scala-lang.org/Xn6CdjfkRAS8Sx9xhRmn0A)):
 
 ```scala
 import com.github.pshirshov.izumi.distage.model.providers.ProviderMagnet
@@ -187,7 +187,7 @@ object Variance {
 }
 ```
 
-`Boundaries.Empty` is an optimization for default boundaries of `>: Nothing <: Any`
+`Boundaries.Empty` is just an optimization for default boundaries of `>: Nothing <: Any` intended to make generated tree more compact.
 
 **Gotcha**: type bounds in Scala are recursive! So it's pretty hard to restore them properly, but we may detect recursive and loose the boundaries appropriately.
 
@@ -257,9 +257,118 @@ Feel free to propose improvements.
 
 ## The logic behind
 
+In this section we will consider primary caveats I faced and and design choices I made while working on my implementation.
+
 ### Compile time: type lambdas and kind projector
 
-TODO
+Type lambdas are represented as `PolyTypeApi`. They always have empty `typeArgs` list and at least one element in `typeParams` list.
+We may access lambda result type using `.resultType.dealias` methods.
+
+Unfortunately, [Kind Projector](https://github.com/typelevel/kind-projector) ---  a plugin, providing us a way to encode type lambdas in scala with sane syntax --- works differently --- it produces such type references that `takesTypeArgs` returns `true` but they are not instances of `PolyTypeApi`, so we have to make sure that we call `etaExpand` before we process our lambda to make sure we converted our type into a type lambda.
+
+Next thing is: result type of a type lambda are always applied types. Lambda parameters are visible as concrete types there. So, when we process a type lambda we need to figure out argument names first, then process result type substituting type parameters with corresponding lamda parameters.
+
+An example:
+
+```scala
+def toPrefix(tpef: u.Type): Option[AppliedReference] = ???
+def makeBoundaries(t: Type): Boundaries = ???
+def toVariance(tpes: TypeSymbol): Variance = ???
+
+def makeRef(tpe: Type, context: Map[String, LambdaParameter]): AbstractReference = {
+  def makeLambda(t: Type): AbstractReference = {
+    val asPoly = t.etaExpand
+    val result = asPoly.resultType.dealias
+    val lamParams = t.typeParams.zipWithIndex.map {
+      case (p, idx) =>
+        p.fullName -> LambdaParameter(idx.toString)
+    }
+    val reference = makeRef(result, lamParams.toMap)
+    Lambda(lamParams.map(_._2), reference)
+  }
+
+  def unpack(t: Type, context: Map[String, LambdaParameter]): AppliedNamedReference = {
+    val tpef = t.dealias.resultType
+    val prefix = toPrefix(tpef)
+    val typeSymbol = tpef.typeSymbol
+    val b = makeBoundaries(tpef)
+    val nameref = context.get(typeSymbol.fullName) match {
+      case Some(value) =>
+        NameReference(value.name, b, prefix)
+      case None =>
+        NameReference(typeSymbol.fullName, b, prefix)
+    }
+
+    tpef.typeArgs match {
+      case Nil =>
+        nameref
+      case args =>
+        val params = args.zip(t.dealias.typeConstructor.typeParams).map {
+          case (a, pa) =>
+            TypeParam(makeRef(a, context), toVariance(pa.asType))
+        }
+        FullReference(nameref.ref, params, prefix)
+    }
+  }
+
+  val out = tpe match {
+    case _: PolyTypeApi =>
+      makeLambda(tpe)
+    case p if p.takesTypeArgs =>
+      if (context.contains(p.typeSymbol.fullName)) {
+        unpack(p, context)
+      } else {
+        makeLambda(p)
+      }
+    case c =>
+      unpack(c, context)
+  }
+
+  out
+}
+```
+
+
+Also we need an API allowing us to apply and partially apply a lambda. This will be the cornerstoune of our type tag combinators:
+
+```
+def applyLambda(lambda: Lambda, parameters: Map[String, AbstractReference]): AbstractReference = ???
+```
+
+This method should recursively replace all the references to lambda arguments with corresponding type references from `parameters` map. So ```apply(λ %0, %1 → Map[%0, %1], Int)``` becomes ```λ %0 → Map[Int, %0]```. This job is mostly mechanical.
+
+
+### Compile time: refinement types
+
+For some reason not all the refined types implement `RefinedTypeApi`, so we have to use internal `scalac` structures to make sure
+we don't miss anything. Here is a working extractor:
+
+```scala
+import c._
+final val it = universe.asInstanceOf[scala.reflect.internal.Types]
+
+object RefinedType {
+  def unapply(tpef: Type): Option[(List[Type], List[SymbolApi])] = {
+    tpef.asInstanceOf[AnyRef] match {
+      case x: it.RefinementTypeRef =>
+        Some((
+          x.parents.map(_.asInstanceOf[Type]),
+          x.decls.map(_.asInstanceOf[SymbolApi]).toList
+        ))
+      case r: RefinedTypeApi =>
+        Some((r.parents, r.decls.toList))
+      case _ =>
+        None
+    }
+  }
+}
+
+val t: Type = ???
+t match {
+  case RefinedType(parents, decls) =>
+    //...
+}
+```
 
 ### Runtime: type tag combinators
 
