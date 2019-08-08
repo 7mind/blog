@@ -3,7 +3,7 @@ Lightweight Scala Reflection and why Dotty needs TypeTags reimplemented
 
 [Type tags](https://docs.scala-lang.org/overviews/reflection/typetags-manifests.html) are one of the most attractive features of Scala.
 
-They allow you to overcome type erasure. They allow you to check subtyping and equality. Here is an example:
+They allow you to overcome type erasure, check subtyping and equality. Here is an example:
 
 ```scala
 import scala.reflect.runtime.universe._
@@ -33,9 +33,9 @@ check(Right("xxx"))
 //↳value Right(xxx) is a subtype of Either[Int, Object]: scala.util.Right[Nothing,String]
 ```
 
-Type tags let you do lot more. Essentially, `scala-reflect` and `TypeTag` machinery are chunks of internal compiler data structures and tools exposed directly to the user. Though the most important operations are identity check (`=:=`) and subtype check (`<:<`).
+`TypeTag` lets you do lot more. Essentially, `scala-reflect` and `TypeTag` machinery are chunks of internal compiler data structures and tools exposed directly to the user. Though the most important operations are identity check (`=:=`) and subtype check (`<:<`).
 
-`TypeTag` concept is a cornerstone for our project --- [distage](https://izumi.7mind.io/latest/release/doc/distage/index.html) --- smart module system for Scala, featuring a solver and a dependency injection mechanism.
+Concept of a type tag is a cornerstone for our project --- [distage](https://izumi.7mind.io/latest/release/doc/distage/index.html) --- smart module system for Scala, featuring a solver and a dependency injection mechanism.
 
 Type tags allows us to turn an arbitrary function into an entity we can introspect at both compile time and run time ([Scastie](https://scastie.scala-lang.org/Xn6CdjfkRAS8Sx9xhRmn0A)):
 
@@ -69,7 +69,7 @@ So, we tried to implement our own lightweight TypeTag replacement with a macro. 
 
 ## What we need
 
-We want to have the following features:
+The following features are essential for `distage` and very useful for many different purposes:
 
 - An ability to check if two types are identical (`=:=`),
 - An ability to check if one type is a subtype of another (`<:<`),
@@ -201,7 +201,7 @@ case class NameReference(
   )extends AppliedNamedReference
 ```
 
-Now we may define reference for a generic:
+Now we may define reference for a generic. It's a recursive structure with an fully qualified type name and a list of arbitrary type tags representing generic arguments:
 
 ```scala
 case class TypeParam(ref: LightTypeTag, variance: Variance)
@@ -261,10 +261,9 @@ In this section we will consider primary caveats I faced and and design choices 
 
 ### Compile time: type lambdas and kind projector
 
-Type lambdas are represented as `PolyTypeApi`. They always have empty `typeArgs` list and at least one element in `typeParams` list.
-We may access lambda result type using `.resultType.dealias` methods.
+Type lambdas are represented as `PolyTypeApi`. They always have empty `typeArgs` list and at least one element in `typeParams` list. We may access lambda result type using `.resultType.dealias` methods.
 
-Unfortunately, [Kind Projector](https://github.com/typelevel/kind-projector) ---  a plugin, providing us a way to encode type lambdas in scala with sane syntax --- works differently --- it produces such type references that `takesTypeArgs` returns `true` but they are not instances of `PolyTypeApi`, so we have to make sure that we call `etaExpand` before we process our lambda to make sure we converted our type into a type lambda.
+Unfortunately, type lambdas encoded with type projections and code produced by [Kind Projector](https://github.com/typelevel/kind-projector) ---  a plugin, providing us a way to encode type lambdas in scala with sane syntax --- works differently --- it produces such type references that `takesTypeArgs` returns `true` but they are not instances of `PolyTypeApi`, so we have to make sure that we call `etaExpand` before we process our lambda to make sure we converted our type into a type lambda.
 
 Next thing is: result type of a type lambda are always applied types. Lambda parameters are visible as concrete types there. So, when we process a type lambda we need to figure out argument names first, then process result type substituting type parameters with corresponding lamda parameters.
 
@@ -370,13 +369,40 @@ t match {
 }
 ```
 
-### Runtime: type tag combinators
-
-TODO
-
 ### Runtime: subtype checks
 
-TODO
+Identity check is trivial. Subtype check is very complicated. It's hard to understand what we even need to perform the check.
+
+Right now I'm storing a the following data:
+
+```scala
+val baseTypes: Map[AbstractReference, Set[AbstractReference]]
+val baseNames: Map[NameReference, Set[NameReference]]
+```
+
+I use `baseNames` to compare `NameReference`s and `baseTypes` for all other things. You may find the full algorithm [here](https://github.com/7mind/izumi/blob/feature/light-type-tags-wip/fundamentals/fundamentals-reflection/src/main/scala/com/github/pshirshov/izumi/fundamentals/reflection/macrortti/LightTypeTagInheritance.scala).
+
+There is one caveat: `scalac` does not provide consistent representation for base types of unapplied types. So it's not so easy to figure out that `Seq[?]` is a base type for `List[?]`.
+
+Fortunately the type names in the base type reference correspond to the names type parameters list:
+
+```scala
+import scala.language.experimental.macros
+import scala.reflect.macros.blackbox
+import scala.reflect.runtime.universe._
+
+val tpe = typeTag[List[Int]].tpe.typeConstructor
+// tpe is a type of of a type lambda
+
+val baseTypes = tpe.typeConstructor.baseClasses.map(t => tpe.baseType(t))
+// all the elements of baseTypes are applied. `A` is a "concrete" type
+// List(List[A], scala.collection.LinearSeqOps[A,[X]List[X],List[A]], Seq[A], ...)
+
+// though type names will correspond to type arguments
+val targs = tpe.etaExpand.typeParams
+// fortunately type names are the same
+// List[reflect.runtime.universe.Symbol] = List(type A)
+```
 
 ## The rest of the damn Owl
 
