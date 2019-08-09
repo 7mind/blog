@@ -33,7 +33,7 @@ check(Right("xxx"))
 //↳value Right(xxx) is a subtype of Either[Int, Object]: scala.util.Right[Nothing,String]
 ```
 
-`TypeTag` lets you do lot more. Essentially, `scala-reflect` and `TypeTag` machinery are chunks of internal compiler data structures and tools exposed directly to the user. Though the most important operations are identity check (`=:=`) and subtype check (`<:<`).
+`TypeTag` lets you do a lot more. Essentially, `scala-reflect` and `TypeTag` machinery are chunks of internal compiler data structures and tools exposed directly to the user. Though the most important operations are identity check (`=:=`) and subtype check (`<:<`) --- in case you have them you may implement whatever else you need at least semi-automatically.
 
 Concept of a type tag is a cornerstone for our project --- [distage](https://izumi.7mind.io/latest/release/doc/distage/index.html) --- smart module system for Scala, featuring a solver and a dependency injection mechanism.
 
@@ -58,8 +58,8 @@ println(s"//↳function application: ${fn.fun.apply(Seq(1, "hi"))}")
 
 Unfortunately, current TypeTag implementation is flawed:
 
-- They [do not support](https://github.com/scala/bug/issues/7686) higher-kinded types,
-- They suffer many [concurrency issues](https://github.com/scala/bug/issues/10766) and it's not so trivial to fix them. In our case TypeTags were occasionaly failing subtype checks (`child <:< parent`) during `scala-reflect` initialization even if we synchronize on literally everything,
+- They [do not support](https://github.com/scala/bug/issues/7686) higher-kinded types, you cannot get a `TypeTag` for `List[_]`,
+- They suffer many [concurrency issues](https://github.com/scala/bug/issues/10766) --- in our case TypeTags were occasionaly failing subtype checks (`child <:< parent`) during `scala-reflect` initialization even if we synchronize on literally everything --- and it's not so trivial to fix them,
 - `scala-reflect` needs *seconds* to initialize.
 
 Moreover, it's still unclear if Scala 3 will support `TypeTag`s or not.
