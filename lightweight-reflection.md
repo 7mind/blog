@@ -1,6 +1,14 @@
 Lightweight Scala Reflection and why Dotty needs TypeTags reimplemented
 =======================================================================
 
+## Summary
+
+`TypeTag` in `scala-reflect` is great but flawed. In this article I provide some observations of my experience of building
+a custom type tag, not depending on `scala-reflect` in runtime, potentially portable to dotty and providing identity and subtype checks. My model is not completely correct though it is enough for most of the purposes. Also I hope that this post may help convince Dotty team to support some form of type tags.
+
+
+## Introduction
+
 [Type tags](https://docs.scala-lang.org/overviews/reflection/typetags-manifests.html) are one of the most attractive features of Scala.
 
 They allow you to overcome type erasure, check subtyping and equality. Here is an example:
@@ -104,6 +112,8 @@ trait LightTypeTag { /*TODO*/ }
 def makeTag[T: c.WeakTypeTag](c: blackbox.Context): c.Expr[LightTypeTag] = {
   import c.universe._
   val tpe = implicitly[WeakTypeTag[T]].tpe
+  // etaExpand converts any type taking arguments into PolyTypeApi ---
+  // a type lambda representation
   println(("type tag", tpe.etaExpand))
   println(("unbound type parameters", tpe.typeParams))
   println(("result type", tpe.etaExpand.resultType.dealias))
@@ -251,8 +261,7 @@ case class Refinement(
   ) extends AppliedReference
 ```
 
-This model is not completely correct (e.g. it's better to use a `NonEmptyList` in `FullReference` and `Lambda`, some prefixes, allowed by the model, are invalid,  etc, etc). Though it may do the job. Also it provides identity check for free in case we follow some simple rules while building our tags. I would be happy to get any improvement proposals.
-
+There are many ways this model can be improved. For example it's better to use a `NonEmptyList` in `FullReference` and `Lambda`, some prefixes, allowed by the model, are invalid,  etc, etc. Though it may do the job. Also it provides identity check for free in case we follow some simple rules while building our tags. I would be happy to get any improvement proposals.
 
 ## The logic behind
 
@@ -262,9 +271,16 @@ In this section we will consider primary caveats I faced and and design choices 
 
 Type lambdas are represented as `PolyTypeApi`. They always have empty `typeArgs` list and at least one element in `typeParams` list. We may access lambda result type using `.resultType.dealias` methods.
 
-Unfortunately, type lambdas encoded with type projections and code produced by [Kind Projector](https://github.com/typelevel/kind-projector) ---  a plugin, providing us a way to encode type lambdas in scala with sane syntax --- works differently --- it produces such type references that `takesTypeArgs` returns `true` but they are not instances of `PolyTypeApi`, so we have to make sure that we call `etaExpand` before we process our lambda to make sure we converted our type into a type lambda.
+Unfortunately, the following things require different approach
 
-Next thing is: result type of a type lambda are always applied types. Lambda parameters are visible as concrete types there. So, when we process a type lambda we need to figure out argument names first, then process result type substituting type parameters with corresponding lamda parameters.
+-  type lambdas encoded with type projections,
+- code produced by [Kind Projector](https://github.com/typelevel/kind-projector) ---  a plugin, providing us a way to encode type lambdas in scala with sane syntax.
+
+In both of the cases `takesTypeArgs` returns `true` but the types are not instances of `PolyTypeApi`. So we have to make sure that we call `etaExpand` before we process our lambda --- to make sure that we are processing an actual lambda.
+
+Next thing is: result type of a type lambda is always an applied type. Lambda parameters are visible as concrete types there:  in case we have `type L[A] = List[A]` result type of such a lambda will be `List[A]` where `A` is a "concrete" type.
+
+So, when we process a type lambda we need to figure out argument names first, then recurse into result type substituting type parameters with corresponding lamda parameters.
 
 An example:
 
@@ -370,16 +386,19 @@ t match {
 
 ### Runtime: subtype checks
 
-Identity check is trivial. Subtype check is very complicated. It's hard to understand what we even need to perform the check.
+Identity check is trivial --- we just need to use `equals` on our model instances.
+Subtype check is very complicated. I wouldn't discuss it here, you may refer to my [actual implementation](https://github.com/7mind/izumi/blob/develop/fundamentals/fundamentals-reflection/src/main/scala/com/github/pshirshov/izumi/fundamentals/reflection/macrortti/LightTypeTagInheritance.scala).
 
-Right now I'm storing a the following data:
+ It's hard to understand what we even need to perform the check.
+
+Right now I'm storing the following data:
 
 ```scala
 val baseTypes: Map[AbstractReference, Set[AbstractReference]]
 val baseNames: Map[NameReference, Set[NameReference]]
 ```
 
-I use `baseNames` to compare `NameReference`s and `baseTypes` for all other things. You may find the full algorithm [here](https://github.com/7mind/izumi/blob/feature/light-type-tags-wip/fundamentals/fundamentals-reflection/src/main/scala/com/github/pshirshov/izumi/fundamentals/reflection/macrortti/LightTypeTagInheritance.scala).
+I use `baseNames` to compare `NameReference`s and `baseTypes` for all other things.
 
 There is one caveat: `scalac` does not provide consistent representation for base types of unapplied types. So it's not so easy to figure out that `Seq[?]` is a base type for `List[?]`.
 
@@ -391,7 +410,7 @@ import scala.reflect.macros.blackbox
 import scala.reflect.runtime.universe._
 
 val tpe = typeTag[List[Int]].tpe.typeConstructor
-// tpe is a type of of a type lambda
+// tpe is a type of a type lambda
 
 val baseTypes = tpe.typeConstructor.baseClasses.map(t => tpe.baseType(t))
 // all the elements of baseTypes are applied. `A` is a "concrete" type
@@ -407,7 +426,7 @@ So, we may reconstruct each base type using type parameters to populate the `con
 
 ## The rest of the damn Owl
 
-I provided some basic insights into the problem. In case you wish to look at the full implementation, you may find it [in our repository](https://github.com/7mind/izumi/tree/feature/light-type-tags-wip0/fundamentals/fundamentals-reflection/src/main/scala/com/github/pshirshov/izumi/fundamentals/reflection/macrortti). It has 2K+ LoC and has all the necessary features implemented. Also there are some logging facilities allowing you to get a detailed log of what happens during subtype checks.
+I provided some basic insights into the problem. In case you wish to look at the full implementation, you may find it [in our repository](https://github.com/7mind/izumi/tree/develop/fundamentals/fundamentals-reflection/src/main/scala/com/github/pshirshov/izumi/fundamentals/reflection/macrortti). It has 2K+ LoC and has all the necessary features implemented. Also there are some logging facilities allowing you to get a detailed log of what happens during subtype checks.
 
 We would welcome any contributions into our library and feel free to use this post and our code as a starting point for your own implementation.
 
