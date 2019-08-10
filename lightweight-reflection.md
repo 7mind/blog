@@ -79,9 +79,19 @@ So, we tried to implement our own lightweight TypeTag replacement with a macro. 
 
 The following features are essential for `distage` and very useful for many different purposes:
 
-- An ability to combine type tags at runtime `CustomTag[List[_]].combine(CustomTag[Int])`.
-- An ability to check if two types are identical: `assert(CustomTag[List[Int]] =:= CustomTag[List].combine(CustomTag[Int]))`,
-- An ability to check if one type is a subtype of another: `CustomTag[List[Int]] <:< CustomTag[List[Any]]`, `CustomTag[Either[Nothing, ?]] <:< CustomTag[Either[Unit, ?]]`
+- An ability to combine type tags at runtime:
+  ```scala
+  CustomTag[List[_]].combine(CustomTag[Int])
+  ```
+- An ability to check if two types are identical:
+  ```scala
+  assert(CustomTag[List[Int]] =:= CustomTag[List].combine(CustomTag[Int]))
+  ```
+- An ability to check if one type is a subtype of another:
+  ```scala
+  assert(CustomTag[List[Int]] <:< CustomTag[List[Any]])
+  assert(CustomTag[Either[Nothing, ?]] <:< CustomTag[Either[Unit, ?]])
+  ```
 
 
 ## Starting point: undefined behavior in Scalac helps to circumvent TypeTag limitations
