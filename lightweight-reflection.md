@@ -4,7 +4,7 @@ Lightweight Scala Reflection and why Dotty needs TypeTags reimplemented
 ## Summary
 
 `TypeTag` in `scala-reflect` is great but flawed. In this article I provide some observations of my experience of building
-a custom type tag, not depending on `scala-reflect` in runtime, potentially portable to dotty and providing identity and subtype checks. My model is not completely correct though it is enough for most of the purposes. Also I hope that this post may help convince Dotty team to support some form of type tags.
+a custom type tag, not depending on `scala-reflect` in runtime, potentially portable to dotty and providing equality and subtype checks. My model is not completely correct though it is enough for most of the purposes. Also I hope that this post may help convince Dotty team to support some form of type tags.
 
 
 ## Introduction
@@ -41,7 +41,7 @@ check(Right("xxx"))
 //↳value Right(xxx) is a subtype of Either[Int, Object]: scala.util.Right[Nothing,String]
 ```
 
-`TypeTag` lets you do a lot more. Essentially, `scala-reflect` and `TypeTag` machinery are chunks of internal compiler data structures and tools exposed directly to the user. Though the most important operations are identity check (`=:=`) and subtype check (`<:<`) --- in case you have them you may implement whatever else you need at least semi-automatically.
+`TypeTag` lets you do a lot more. Essentially, `scala-reflect` and `TypeTag` machinery are chunks of internal compiler data structures and tools exposed directly to the user. Though the most important operations are equality check (`=:=`) and subtype check (`<:<`) --- in case you have them you may implement whatever else you need at least semi-automatically.
 
 Concept of a type tag is a cornerstone for our project --- [distage](https://izumi.7mind.io/latest/release/doc/distage/index.html) --- smart module system for Scala, featuring a solver and a dependency injection mechanism.
 
@@ -261,7 +261,7 @@ case class Refinement(
   ) extends AppliedReference
 ```
 
-There are many ways this model can be improved. For example it's better to use a `NonEmptyList` in `FullReference` and `Lambda`, some prefixes, allowed by the model, are invalid,  etc, etc. Though it may do the job. Also it provides identity check for free in case we follow some simple rules while building our tags. I would be happy to get any improvement proposals.
+There are many ways this model can be improved. For example it's better to use a `NonEmptyList` in `FullReference` and `Lambda`, some prefixes, allowed by the model, are invalid,  etc, etc. Though it may do the job. Also it provides equality check for free in case we follow some simple rules while building our tags. I would be happy to get any improvement proposals.
 
 ## The logic behind
 
@@ -386,7 +386,7 @@ t match {
 
 ### Runtime: subtype checks
 
-Identity check is trivial --- we just need to use `equals` on our model instances.
+Equality check is trivial --- we just need to use `equals` on our model instances.
 Subtype check is very complicated. I wouldn't discuss it here, you may refer to my [actual implementation](https://github.com/7mind/izumi/blob/develop/fundamentals/fundamentals-reflection/src/main/scala/com/github/pshirshov/izumi/fundamentals/reflection/macrortti/LightTypeTagInheritance.scala).
 
  It's hard to understand what we even need to perform the check.
