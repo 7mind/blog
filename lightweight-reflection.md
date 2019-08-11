@@ -4,7 +4,7 @@ Lightweight Scala Reflection and why Dotty needs TypeTags reimplemented
 ## Summary
 
 `TypeTag` in `scala-reflect` is great but flawed. In this article I provide some observations of my experience of building
-a custom type tag, not depending on `scala-reflect` in runtime, potentially portable to dotty and providing equality and subtype checks. My model is not completely correct though it is enough for most of the purposes. Also I hope that this post may help convince Dotty team to support some form of type tags. This post is targeting those who have some knowledge of `scala-reflection` and unhappy with it, those who has some knowledge of Scala compiler and it's APIs and any other nerds.
+a custom type tag, not depending on `scala-reflect` in runtime, potentially portable to dotty and providing equality and subtype checks. My model is not completely correct though it is enough for most of the purposes. Also I hope that this post may help convince Dotty team to support some form of type tags. This post is targeting those who have some knowledge of `scala-reflect` and unhappy with it, those who has some knowledge of Scala compiler and it's APIs and any other nerds.
 
 ## Introduction
 
@@ -72,7 +72,19 @@ Unfortunately, current TypeTag implementation is flawed:
 Moreover, it's still unclear if Scala 3 will support `TypeTag`s or not.
 Some people say it's too hard and recommend to write a custom macro to replace TypeTags for in Scala 3 / Dotty when it's necessary.
 
-So, we tried to implement our own lightweight TypeTag replacement with a macro. It's doable. It works. Though it's overcomplicated and there are many subtle discrepancies between Scala model and our model. So we still hope that Dotty team will consider supporting TypeTags in Scala 3. Currently our implementation supports Scala 2.12/2.13 though it's possible to port it to Dotty and we are going to do it in foreseeable future.
+So, we tried to implement our own lightweight TypeTag replacement with a macro.
+
+The guys who work on Scala/Dotty compilers say that it's a very complicated task:
+
+> A full implmentation of subtyping is extremely complex
+
+--- [Guillaume Martres](https://gitter.im/lampepfl/dotty?at=5d387f7435e05c0993939935)
+
+> Yikes but the full subtyping algorithm is extremely complex. And also carefull.
+
+--- [Georgi Krastev](https://gitter.im/scala/contributors?at=5d4f179da4efe3718ddcd501)
+
+But it's doable. We did it and our model is good enough for many practical usecases despite of being overcomplicated and having many subtle discrepancies with Scala model. So we still hope that Dotty team will consider supporting TypeTags in Scala 3. Currently our implementation supports Scala 2.12/2.13 though it's possible to port it to Dotty and we are going to do it in foreseeable future.
 
 ## The scope of the work
 
