@@ -6,6 +6,10 @@ Lightweight Scala Reflection and why Dotty needs TypeTags reimplemented
 `TypeTag` in `scala-reflect` is great but flawed. In this article I provide some observations of my experience of building
 a custom type tag, not depending on `scala-reflect` in runtime, potentially portable to dotty and providing equality and subtype checks. Our usage scenario is: we generate type tags at compile time and check their equality and subtyping at runtime, we don't use them to cast anything and we don't need to generate types at runtime. Our model is not completely correct though it is enough for most of the purposes. **Also I hope that this post may help convince Dotty team to support some form of type tags**. This post is targeting those who have some knowledge of `scala-reflect` and unhappy with it, those who has some knowledge of Scala compiler and it's APIs and any other nerds.
 
+## TLDR: usage example
+
+There is no release yet, once we make a release I will post a usage example with a Scastie here.
+
 ## Introduction
 
 [Type tags](https://docs.scala-lang.org/overviews/reflection/typetags-manifests.html) are one of the most attractive features of Scala.
@@ -318,8 +322,8 @@ def toPrefix(tpef: u.Type): Option[AppliedReference] = ???
 def makeBoundaries(t: Type): Boundaries = ???
 def toVariance(tpes: TypeSymbol): Variance = ???
 
-def makeRef(tpe: Type, context: Map[String, LambdaParameter]): AbstractReference = {
-  def makeLambda(t: Type): AbstractReference = {
+def makeRef(tpe: Type, context: Map[String, LambdaParameter]): LightTypeTag = {
+  def makeLambda(t: Type): LightTypeTag = {
     val asPoly = t.etaExpand
     val result = asPoly.resultType.dealias
     val lamParams = t.typeParams.zipWithIndex.map {
@@ -375,7 +379,7 @@ def makeRef(tpe: Type, context: Map[String, LambdaParameter]): AbstractReference
 An API allowing us to apply and partially apply a lambda is necessary for any runtime usage. This will be the cornerstoune of our type tag combinators:
 
 ```scala
-def applyLambda(lambda: Lambda, parameters: Map[String, AbstractReference]): AbstractReference
+def applyLambda(lambda: Lambda, parameters: Map[String, LightTypeTag]): LightTypeTag
 ```
 
 This method should recursively replace all the references to lambda arguments with corresponding type references from `parameters` map. So ```apply(λ %0, %1 → Map[%0, %1], Int)``` becomes ```λ %0 → Map[Int, %0]```. This job is mostly mechanical.
@@ -415,14 +419,15 @@ t match {
 ### Runtime: subtype checks
 
 Equality check is trivial --- `equals` on our model instances would work just fine.
-Subtype check is very complicated. I wouldn't discuss it here, you may refer to my [actual implementation](https://github.com/7mind/izumi/blob/develop/fundamentals/fundamentals-reflection/src/main/scala/com/github/pshirshov/izumi/fundamentals/reflection/macrortti/LightTypeTagInheritance.scala).
+Subtype check is kinda complicated.
+I wouldn't discuss it in the detail here, you may refer to my [actual implementation](https://github.com/7mind/izumi/blob/develop/fundamentals/fundamentals-reflection/src/main/scala/com/github/pshirshov/izumi/fundamentals/reflection/macrortti/LightTypeTagInheritance.scala).
 
 It's hard to understand what is even needed to perform the check.
 
 Right now I'm storing the following data:
 
 ```scala
-val baseTypes: Map[AbstractReference, Set[AbstractReference]]
+val baseTypes: Map[LightTypeTag, Set[LightTypeTag]]
 val baseNames: Map[NameReference, Set[NameReference]]
 ```
 
@@ -451,6 +456,117 @@ val targs = tpe.etaExpand.typeParams
 ```
 
 So, each base type may be reconstructed by using type parameters to populate the `context` for `makeRef`.
+
+
+The comparison alghoritm itself is a recursive procedure which considers all the possible pairs of type references plus some basic cornercases.
+
+The primary cases are:
+
+```scala
+  def isChild(selfT: LightTypeTag, thatT: LightTypeTag): Boolean = {
+    (selfT, thatT) match {
+      case (s, t) if s == t =>
+        true
+      case (s, _) if s == tpeNothing =>
+        true
+      case (_, t) if t == tpeAny || t == tpeAnyRef || t == tpeObject =>
+        true
+      case (s: FullReference, t: FullReference) =>
+        if (parentsOf(s.asName).contains(t)) {
+          true
+        } else {
+          oneOfKnownParentsIsInheritedFrom(ctx)(s, t) || compareParameterizedRefs(ctx)(s, t)
+        }
+      case (s: NameReference, t: FullReference) =>
+        oneOfKnownParentsIsInheritedFrom(ctx)(s, t)
+      case (s: NameReference, t: NameReference) =>
+        parentsOf(s).exists(p => isChild(p, thatT))
+      case (_: AppliedNamedReference, t: Lambda) =>
+        isChild(selfT, t.output)
+      case (s: Lambda, t: AppliedNamedReference) =>
+        isChild(s.output, t)
+      case (s: Lambda, o: Lambda) =>
+        s.input == o.input && isChild(s.output, o.output)
+      // ...
+    }
+  }
+```
+
+Several helper functions are required as well:
+
+```scala
+// uses `baseNames` to transitively fetch all parent type names
+def parentsOf(t: NameReference): Set[NameReference] = ???
+
+def oneOfKnownParentsIsInheritedFrom(child: LightTypeTag, parent: LightTypeTag): Boolean = {
+  baseTypes.get(t).toSeq.flatten.exists(p => isChild(p, parent))
+}
+
+def isSame(a: LightTypeTag, b: LightTypeTag): Boolean = {
+  (a, b) match {
+    case (an: AppliedNamedReference, ab: AppliedNamedReference) =>
+      an.asName == ab.asName
+    case _ =>
+      false
+  }
+}
+```
+
+The trickiest part is the comparator for `FullReference`s:
+
+```scala
+  def compareParameterizedRefs(self: FullReference, that: FullReference): Boolean = {
+    def parameterShapeCompatible: Boolean = {
+      self.parameters.zip(that.parameters).forall {
+        case (ps, pt) =>
+          ps.variance match {
+            case Variance.Invariant =>
+              ps.ref == pt.ref
+            case Variance.Contravariant =>
+              isChild(pt.ref, ps.ref)
+            case Variance.Covariant =>
+              isChild(ps.ref, pt.ref)
+          }
+      }
+    }
+
+    def sameArity: Boolean = {
+      self.parameters.size == that.parameters.size
+    }
+
+    if (self.asName == that.asName) {
+      sameArity && parameterShapeCompatible
+    } else if (isChild(self.asName, that.asName)) {
+      // we search for all the lambdas having potentially compatible result type
+      val moreParents = baseTypes
+        .collect {
+          case (l: Lambda, b) if isSame(l.output, self.asName) =>
+            b
+              .collect {
+                case l: Lambda if l.input.size == self.parameters.size => l
+              }
+              .map(l => l.combine(self.parameters.map(_.ref)))
+        }
+      .flatten
+
+      moreParents
+        .exists {
+          l =>
+            val maybeParent = l
+            isChild(maybeParent, that)
+        }
+    } else {
+      false
+    }
+  }
+```
+
+The real code is more complicated (it takes care of bound lambda parameters also), but this is the main idea.
+
+In fact these are simple symbolic computations mocking the hard work of the Scala compiler. But they work.
+
+![test log](type-tags-run-example.png)
+
 
 ## The rest of the damn Owl
 
