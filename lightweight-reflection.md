@@ -4,8 +4,7 @@ Lightweight Scala Reflection and why Dotty needs TypeTags reimplemented
 ## Summary
 
 `TypeTag` in `scala-reflect` is great but flawed. In this article I provide some observations of my experience of building
-a custom type tag, not depending on `scala-reflect` in runtime, potentially portable to dotty and providing equality and subtype checks. My model is not completely correct though it is enough for most of the purposes. Also I hope that this post may help convince Dotty team to support some form of type tags.
-
+a custom type tag, not depending on `scala-reflect` in runtime, potentially portable to dotty and providing equality and subtype checks. My model is not completely correct though it is enough for most of the purposes. Also I hope that this post may help convince Dotty team to support some form of type tags. This post is targeting those who have some knowledge of `scala-reflection` and unhappy with it, those who has some knowledge of Scala compiler and it's APIs and any other nerds.
 
 ## Introduction
 
@@ -45,7 +44,7 @@ check(Right("xxx"))
 
 Concept of a type tag is a cornerstone for our project --- [distage](https://izumi.7mind.io/latest/release/doc/distage/index.html) --- smart module system for Scala, featuring a solver and a dependency injection mechanism.
 
-Type tags allows us to turn an arbitrary function into an entity we can introspect at both compile time and run time ([Scastie](https://scastie.scala-lang.org/Xn6CdjfkRAS8Sx9xhRmn0A)):
+Type tags allows us to turn an arbitrary function into an entity which may be introspected at both compile time and run time ([Scastie](https://scastie.scala-lang.org/Xn6CdjfkRAS8Sx9xhRmn0A)):
 
 ```scala
 import com.github.pshirshov.izumi.distage.model.providers.ProviderMagnet
@@ -75,7 +74,7 @@ Some people say it's too hard and recommend to write a custom macro to replace T
 
 So, we tried to implement our own lightweight TypeTag replacement with a macro. It's doable. It works. Though it's overcomplicated and there are many subtle discrepancies between Scala model and our model. So we still hope that Dotty team will consider supporting TypeTags in Scala 3. Currently our implementation supports Scala 2.12/2.13 though it's possible to port it to Dotty and we are going to do it in foreseeable future.
 
-## What we need
+## The scope of the work
 
 The following features are essential for `distage` and very useful for many different purposes:
 
@@ -147,17 +146,17 @@ This example prints
 (result type,scala.util.Either[K1,Unit])
 ```
 
-Now we may see that:
+It's time to make some observations:
 
 - `Nothing` has disappeared out of `T[Nothing]`,
-- We've successfully circumvented Scala's syntactic limitations and got a weak type tag for our unapplied `type T1[K]`! It's an undefined but logical and very useful behaviour,
+- Scala's syntactic limitations were successfully circumvented and we got a weak type tag for our unapplied `type T1[K]`! It's an undefined but logical and very useful behaviour,
 - Scala can expand all the nested lambdas into a single lambda.
 
 ### Better approach
 
 Previous trick would require us to manually write a custom materializer for every kind we want to get our type tags for. So there is another approach which is more useful for practical usage.
 
-We wrap our type lambda into a structural refinement of a type:
+Type lambda may be wrapped into a structural refinement of a type:
 
 ```scala
 trait HKTag[T] {
@@ -167,23 +166,23 @@ trait HKTag[T] {
 type Wrapped = HKTag[{ type Arg[A] = K[A] }]
 ```
 
-Now we got rid of these damn type arguments and may analyse different `Wrapped` types uniformly.
+No there are no more those damn type arguments and may analyse different `Wrapped` types uniformly.
 This is outside of the scope of this post, you may find completed and working example in [distage repository](https://github.com/7mind/izumi/tree/403bbf669fd2ab6924564f821cb52c459c3be082/fundamentals/fundamentals-reflection/src/main/scala/com/github/pshirshov/izumi/fundamentals/reflection)
 
 ## Designing data model
 
-We want to use a macro to statically generate non-ambigious type identifiers. And we have the following Scala features to support:
+We want to use a macro to statically generate non-ambigious type identifiers. The following Scala features have to be supported:
 
 - [Parameterized types](https://docs.scala-lang.org/tour/generic-classes.html) (Generics),
 - [Unapplied types](http://eed3si9n.com/herding-cats/Kinds.html) (type lambdas, higher-kinded types),
 - [Compound types](https://docs.scala-lang.org/tour/compound-types.html):  `val v: Type1 with Type2`,
 - [Structural types](https://docs.scala-lang.org/style/types.html#structural-types): `val v: {def repr(a: Int): String}`,
-- [Path-dependent types](https://docs.scala-lang.org/tour/inner-classes.html): `val a: b.T`. Actually it's very hard to provide comprehensive support for PDTs but we may do it to some extent,
+- [Path-dependent types](https://docs.scala-lang.org/tour/inner-classes.html): `val a: b.T`. Actually it's very hard to provide comprehensive support for PDTs but it may be done to some extent --- ,
 - [Variances](https://docs.scala-lang.org/tour/variances.html): `trait T[+A]`,
 - [Type bounds](https://docs.scala-lang.org/tour/upper-type-bounds.html): `trait T1[K <: T0]`
 
 
-Essentially, we have two primary forms of our types, applied and unapplied. So, let's encode this:
+Essentially, there are two primary forms of the types, applied and unapplied. So, let's encode this:
 
 ```scala
 sealed trait LightTypeTag
@@ -191,7 +190,7 @@ sealed trait AppliedReference extends LightTypeTag
 sealed trait AppliedNamedReference extends LightTypeTag
 ```
 
-Now we may define helper structures, describing type bounds and variance:
+Now it's possible to define helper structures, describing type bounds and variance:
 
 ```scala
 sealed trait Boundaries
@@ -210,9 +209,9 @@ object Variance {
 
 `Boundaries.Empty` is just an optimization for default boundaries of `>: Nothing <: Any` intended to make generated tree more compact.
 
-**Gotcha**: type bounds in Scala are recursive! So it's pretty hard to restore them properly, but we may detect recursive and loose the boundaries appropriately.
+**Gotcha**: type bounds in Scala are recursive! So it's pretty hard to restore them properly, but the recursion can be detected and the boundaries loosened appropriately.
 
-So, we will identify nongeneric types using their fully qualified names. A type may have a prefix (in case it's a PDT) and type boundaries (in case it's an abstract type parameter):
+Non-generic types may be identified by their fully qualified names. A type may have a prefix (in case it's a PDT) and type boundaries (in case it's an abstract type parameter):
 
 ```scala
 case class NameReference(
@@ -222,7 +221,7 @@ case class NameReference(
   )extends AppliedNamedReference
 ```
 
-Now we may define reference for a generic. It's a recursive structure with an fully qualified type name and a list of arbitrary type tags representing generic arguments:
+It's time for a generic type reference. It's a recursive structure with an fully qualified type name and a list of arbitrary type tags representing generic arguments:
 
 ```scala
 case class TypeParam(ref: LightTypeTag, variance: Variance)
@@ -233,7 +232,7 @@ case class FullReference(
   ) extends AppliedNamedReference
 ```
 
-And now we may define a type lambda:
+Now a type lambda may be defined:
 
 ```scala
 case class Lambda(
@@ -272,26 +271,33 @@ case class Refinement(
   ) extends AppliedReference
 ```
 
-There are many ways this model can be improved. For example it's better to use a `NonEmptyList` in `FullReference` and `Lambda`, some prefixes, allowed by the model, are invalid,  etc, etc. Though it may do the job. Also it provides equality check for free in case we follow some simple rules while building our tags. I would be happy to get any improvement proposals.
+There are many ways this model can be improved. For example it's better to use a `NonEmptyList` in `FullReference` and `Lambda`, some prefixes, allowed by the model, are invalid,  etc, etc.
+
+Also there are some issues:
+
+- Path-dependent types will use their names instead of
+
+
+Though it does the job. Also it provides equality check for free in case the tags are being built in some kind of a normal form. I would be happy to get any improvement proposals.
 
 ## The logic behind
 
-In this section we will consider primary caveats I faced and and design choices I made while working on my implementation.
+In this section I will consider some caveats I faced and and design choices I made while working on my implementation.
 
 ### Compile time: type lambdas and kind projector
 
-Type lambdas are represented as `PolyTypeApi`. They always have empty `typeArgs` list and at least one element in `typeParams` list. We may access lambda result type using `.resultType.dealias` methods.
+Type lambdas are represented as `PolyTypeApi`. They always have empty `typeArgs` list and at least one element in `typeParams` list. Lambda result type may be accessed with `.resultType.dealias` methods.
 
 Unfortunately, the following things require different approach
 
 -  type lambdas encoded with type projections,
 - code produced by [Kind Projector](https://github.com/typelevel/kind-projector) ---  a plugin, providing us a way to encode type lambdas in scala with sane syntax.
 
-In both of the cases `takesTypeArgs` returns `true` but the types are not instances of `PolyTypeApi`. So we have to make sure that we call `etaExpand` before we process our lambda --- to make sure that we are processing an actual lambda.
+In both of the cases `takesTypeArgs` returns `true` but the types are not instances of `PolyTypeApi`. So it's important to call `etaExpand` before processing the lambda.
 
-Next thing is: result type of a type lambda is always an applied type. Lambda parameters are visible as concrete types there:  in case we have `type L[A] = List[A]` result type of such a lambda will be `List[A]` where `A` is a "concrete" type.
+Next thing is: result type of a type lambda is always an applied type. Lambda parameters are visible as concrete types there: for the following lambda: `type L[A] = List[A]` the result type would be `List[A]` where `A` is a "concrete" type.
 
-So, when we process a type lambda we need to figure out argument names first, then recurse into result type substituting type parameters with corresponding lamda parameters.
+So, before type lambda can be processed it's argument names need to be recovered. Then the alghoritm should recurse into the result type substituting type parameters with corresponding lamda parameters.
 
 An example:
 
@@ -354,7 +360,7 @@ def makeRef(tpe: Type, context: Map[String, LambdaParameter]): AbstractReference
 ```
 
 
-Also we need an API allowing us to apply and partially apply a lambda. This will be the cornerstoune of our type tag combinators:
+An API allowing us to apply and partially apply a lambda is necessary for any runtime usage. This will be the cornerstoune of our type tag combinators:
 
 ```scala
 def applyLambda(lambda: Lambda, parameters: Map[String, AbstractReference]): AbstractReference
@@ -365,8 +371,7 @@ This method should recursively replace all the references to lambda arguments wi
 
 ### Compile time: refinement types
 
-For some reason not all the refined types implement `RefinedTypeApi`, so we have to use internal `scalac` structures to make sure
-we don't miss anything. Here is a working extractor:
+For some reason not all the refined types implement `RefinedTypeApi`. It's necessary to use internal `scalac` structures not to miss something. Here is a working extractor:
 
 ```scala
 import c._
@@ -397,10 +402,10 @@ t match {
 
 ### Runtime: subtype checks
 
-Equality check is trivial --- we just need to use `equals` on our model instances.
+Equality check is trivial --- `equals` on our model instances would work just fine.
 Subtype check is very complicated. I wouldn't discuss it here, you may refer to my [actual implementation](https://github.com/7mind/izumi/blob/develop/fundamentals/fundamentals-reflection/src/main/scala/com/github/pshirshov/izumi/fundamentals/reflection/macrortti/LightTypeTagInheritance.scala).
 
- It's hard to understand what we even need to perform the check.
+It's hard to understand what is even needed to perform the check.
 
 Right now I'm storing the following data:
 
@@ -433,7 +438,7 @@ val targs = tpe.etaExpand.typeParams
 // List[reflect.runtime.universe.Symbol] = List(type A)
 ```
 
-So, we may reconstruct each base type using type parameters to populate the `context` for `makeRef`.
+So, each base type may be reconstructed by using type parameters to populate the `context` for `makeRef`.
 
 ## The rest of the damn Owl
 
