@@ -4,7 +4,7 @@ Lightweight Scala Reflection and why Dotty needs TypeTags reimplemented
 ## Summary
 
 `TypeTag` in `scala-reflect` is great but flawed. In this article I provide some observations of my experience of building
-a custom type tag, not depending on `scala-reflect` in runtime, potentially portable to dotty and providing equality and subtype checks. Our usage scenario is: we generate type tags at compile time and check their equality and subtyping at runtime, we don't use them to cast anything and we don't need to generate types at runtime. Our model is not completely correct though it is enough for most of the purposes. **Also I hope that this post may help convince Dotty team to support some form of type tags**. This post is targeting those who have some knowledge of `scala-reflect` and unhappy with it, those who has some knowledge of Scala compiler and it's APIs and any other nerds.
+a custom type tag, not depending on `scala-reflect` in runtime, potentially portable to dotty and providing equality and subtype checks. Our usage scenario is: we generate type tags at compile time and check their equality and subtyping at runtime, we don't use them to cast anything and we don't need to generate types at runtime. Our model is not completely correct though it is enough for most of the purposes. **Also I hope that this post may help convince Dotty team to support some form of type tags**, there is a [corresponding ticket](https://github.com/lampepfl/dotty-feature-requests/issues/62) on Dotty bugtracker. This post is targeting those who have some knowledge of `scala-reflect` and unhappy with it, those who has some knowledge of Scala compiler and it's APIs and any other nerds.
 
 ## TLDR: usage example
 
