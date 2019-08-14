@@ -8,7 +8,57 @@ a custom type tag, not depending on `scala-reflect` in runtime, potentially port
 
 ## TLDR: usage example
 
-There is no release yet, once we make a release I will post a usage example with a Scastie here.
+Add this into your `build.sbt`:
+
+```scala
+libraryDependencies += "io.7mind.izumi" %% "distage-model" % "0.9.0"
+```
+
+```scala
+import izumi.distage.model.reflection.universe.RuntimeDIUniverse._
+
+// === === === === === === === === === //
+def combinationTest() = {
+  val tag1 = TagK[List].fullLightTypeTag
+  val tag2 = Tag[Int].fullLightTypeTag
+  val tag3 = tag1.combine(tag2)
+  val tag4 = Tag[List[Int]].fullLightTypeTag
+  println(s"list tag: $tag1, int tag: $tag2, combined: $tag3, combined tag is equal to List[Int] tag: ${tag3 =:= tag4}")
+}
+
+combinationTest()
+
+// === === === === === === === === === //
+type Id[K] = K
+
+def subtypeTest() = {
+
+  val t = TagK[Id]
+
+  case class Datum[F[_] : TagK](a: F[Int]) {
+    def tag: TagK[F] = implicitly[TagK[F]]
+  }
+
+  val elements = List(
+    Datum[Id](1),
+    Datum[List](List(1,2,3))
+  )
+
+  val seqElements = elements.filter(_.tag.fullLightTypeTag <:< TagK[Seq].fullLightTypeTag)
+  println(s"Only elements parameterized by Seq[_] children: $seqElements")
+}
+
+subtypeTest()
+```
+
+This example will produce the following output:
+
+```
+list tag: λ %0 → List[+0], int tag: Int, combined: List[+Int], combined tag is equal to List[Int] tag: true
+Only elements parameterized by Seq[_] children: List(Datum(List(1, 2, 3)))
+```
+
+[Scastie](https://scastie.scala-lang.org/SxnPULGOSDi4BkNu4UpNzg)
 
 ## Introduction
 
