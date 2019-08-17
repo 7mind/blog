@@ -11,12 +11,14 @@ a custom type tag, not depending on `scala-reflect` in runtime, potentially port
 Add this into your `build.sbt`:
 
 ```scala
-libraryDependencies += "io.7mind.izumi" %% "distage-model" % "0.9.3"
+libraryDependencies += "io.7mind.izumi" %% "fundamentals-reflection" % "0.9.3"
 ```
 
+Then try the following ([Scastie](https://scastie.scala-lang.org/TgtpbDp3SYaxZyabAgCinQ)):
+
 ```scala
-import izumi.distage.model.reflection.universe.RuntimeDIUniverse._
 import izumi.fundamentals.reflection.macrortti._
+import izumi.fundamentals.reflection.Tags._
 
 // === === === === === === === === === //
 def combinationTest() = {
@@ -56,8 +58,6 @@ This example will produce the following output:
 list tag: λ %0 → List[+0], int tag: Int, combined: List[+Int], combined tag is equal to List[Int] tag: true
 Only elements parameterized by Seq[_] children: List(Datum(List(1, 2, 3)))
 ```
-
-[Scastie](https://scastie.scala-lang.org/5i64wb17SgWzNj8SMBqVLw)
 
 ## Introduction
 
