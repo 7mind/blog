@@ -11,18 +11,19 @@ a custom type tag, not depending on `scala-reflect` in runtime, potentially port
 Add this into your `build.sbt`:
 
 ```scala
-libraryDependencies += "io.7mind.izumi" %% "distage-model" % "0.9.0"
+libraryDependencies += "io.7mind.izumi" %% "distage-model" % "0.9.3"
 ```
 
 ```scala
 import izumi.distage.model.reflection.universe.RuntimeDIUniverse._
+import izumi.fundamentals.reflection.macrortti._
 
 // === === === === === === === === === //
 def combinationTest() = {
-  val tag1 = TagK[List].fullLightTypeTag
-  val tag2 = Tag[Int].fullLightTypeTag
+  val tag1 = TagK[List].tag
+  val tag2 = Tag[Int].tag
   val tag3 = tag1.combine(tag2)
-  val tag4 = Tag[List[Int]].fullLightTypeTag
+  val tag4 = Tag[List[Int]].tag
   println(s"list tag: $tag1, int tag: $tag2, combined: $tag3, combined tag is equal to List[Int] tag: ${tag3 =:= tag4}")
 }
 
@@ -33,10 +34,8 @@ type Id[K] = K
 
 def subtypeTest() = {
 
-  val t = TagK[Id]
-
   case class Datum[F[_] : TagK](a: F[Int]) {
-    def tag: TagK[F] = implicitly[TagK[F]]
+    def tag: LightTypeTag = implicitly[TagK[F]].tag
   }
 
   val elements = List(
@@ -44,7 +43,7 @@ def subtypeTest() = {
     Datum[List](List(1,2,3))
   )
 
-  val seqElements = elements.filter(_.tag.fullLightTypeTag <:< TagK[Seq].fullLightTypeTag)
+  val seqElements = elements.filter(_.tag <:< TagK[Seq].tag)
   println(s"Only elements parameterized by Seq[_] children: $seqElements")
 }
 
@@ -58,7 +57,7 @@ list tag: λ %0 → List[+0], int tag: Int, combined: List[+Int], combined tag i
 Only elements parameterized by Seq[_] children: List(Datum(List(1, 2, 3)))
 ```
 
-[Scastie](https://scastie.scala-lang.org/SxnPULGOSDi4BkNu4UpNzg)
+[Scastie](https://scastie.scala-lang.org/5i64wb17SgWzNj8SMBqVLw)
 
 ## Introduction
 
@@ -120,7 +119,7 @@ println(s"//↳function application: ${fn.fun.apply(Seq(1, "hi"))}")
 Unfortunately, current TypeTag implementation is flawed:
 
 - They [do not support](https://github.com/scala/bug/issues/7686) higher-kinded types, you cannot get a `TypeTag` for `List[_]`,
-- They suffer many [concurrency issues](https://github.com/scala/bug/issues/10766) --- in our case TypeTags were occasionaly failing subtype checks (`child <:< parent`) during `scala-reflect` initialization even if we synchronize on literally everything --- and it's not so trivial to fix them,
+- They suffer many [concurrency issues](https://github.com/scala/bug/issues/10766) --- in our case TypeTags were occasionaly failing subtype checks (`child <:< parent`) during `scala-reflect` initialization even if we synchronize on literally everything --- and it's not so trivial to fix them; in worst-case scenario you may even see `Set[Int]` as `Set[String]`,
 - `scala-reflect` needs *seconds* to initialize.
 
 Moreover, it's still unclear if Scala 3 will support `TypeTag`s or not.
