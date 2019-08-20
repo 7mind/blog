@@ -228,7 +228,7 @@ trait HKTag[T] {
   // ...
 }
 
-type Wrapped = HKTag[{ type Arg[A] = K[A] }]
+type Wrapped[K[_]] = HKTag[{ type Arg[A] = K[A] }]
 ```
 
 No there are no more those damn type arguments and may analyse different `Wrapped` types uniformly.
