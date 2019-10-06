@@ -11,7 +11,7 @@ a custom type tag, not depending on `scala-reflect` in runtime, potentially port
 Add this into your `build.sbt`:
 
 ```scala
-libraryDependencies += "io.7mind.izumi" %% "fundamentals-reflection" % "0.9.3"
+libraryDependencies += "io.7mind.izumi" %% "fundamentals-reflection" % "0.9.5"
 ```
 
 Then try the following ([Scastie](https://scastie.scala-lang.org/TgtpbDp3SYaxZyabAgCinQ)):
