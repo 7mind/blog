@@ -49,13 +49,13 @@ But there are significant shortcomings:
 
 ### Multirepo: good and bad
 
-Monorepo layout is always considered as a first answer to any multirepo issues because:
+Multirepo layout is always considered as a first answer to any monorepo issues because:
 
 1. It enforces strict isolation between independent software components,
 2. It allows people to quickly build independent components,
 3. It allows people not to interfere while working on independent projects.
 
-Though monorepo is a disaster:
+Though multirepo is a disaster:
 
 1. **Global refactorings affecting** a shared component is a real pain, even simple rename cannot
    be done in one click,
