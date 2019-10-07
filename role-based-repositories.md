@@ -58,12 +58,12 @@ Multirepo layout is always considered as a first answer to any monorepo issues b
 
 Though multirepo is a disaster:
 
-1. **Global refactorings affecting** a shared component is a real pain, even simple rename cannot
+1. **Global refactorings** that affect a shared component are a real pain, even simple rename cannot
    be done in one click,
 2. It's may be hard to perform any kind of **integration**. When you have multiple components you
    have to build a comprehensive orchestration solutions for your integration testing and deployments,
    you have to setup sophisticated CI flows, etc, etc,
-3. In case your release flow involves several components - it's always a real pain in the ass.
+3. In case your release flow involves several components - it's always a real pain.
 
 These things are especially bad when you have some explicit or implicit dependencies between your
 components which is a typical case, usually we have at least one shared library (aka SDK) and many
