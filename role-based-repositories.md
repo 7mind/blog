@@ -70,9 +70,116 @@ or all our components (aka microservices) depend on that library.
 
 ## The solution
 
+### The idea
 
-### SBT and it's shortcomings
+Let's assume that we have a product (an online auction platform, for example) consisting of several software components:
+
+1. `iam`: Identity and Account Management Service
+2. `billing`: Billing Service
+3. `analytics`: Analytics Service
+4. `bidding`: Bidding Service
+5. `catalog`: Item Catalog Service
+
+All these projects use one shared SDK named `sdk`.
+
+We may also assume that there would be several teams working on these projects.
+For example we may assign `sdk`, `iam` and `catalog` projects to "infrastructure" team,
+`billing` and `analytics` to "finance" team and `bidding` to "store" team.
+
+Imagine that you have a magic tool `project` allowing us to choose which
+projects we want to work on and set up the environment:
+
+```bash
+# Prepares workspace for all our components
+project prepare *
+
+# Prepares workspace to work on `billing` and `analytics`
+# Pulls in `sdk` as well
+project prepare +billing +analytics
+
+# Prepares workspace to work on `sdk`, `iam` and `catalog`
+project prepare :infrastructure
+
+# Prepares cross-build project
+project prepare --platforms js,jvm,native :infrastructure
+```
+
+This tool would need some kind of declarative description of our product stored in a repository.
+The rest can be as flexible as we wish. For example, in case we don't want to keep all our source code in one repository,
+the tool may pull the components from different repositories, take care of commits, etc, etc.
+
+We may say that our repository have *roles* and at any time we may choose which roles we wish to *activate*.
+So, we may call this approach "Role-Based Repository", or RBR.
+
+Such a tool would solve most of the problems. When we need to perform a global refactoring we may generate all-in-one project.
+When we wish to implement a quick patch we may generate a project with just one component.
+When we need to integrate several components we may choose what exactly we need. Etc, etc.
+
+### The reality
+
+Unfortunately, there is no such a tool which is polyglot, convenient and easy to use.
+Something can be done with Bazel, but as far as I know there are no good solutions at this moment
+(October 2019).
+
+And things become bad when we need this for Scala. And especially bad when we need to work with cross-platform Scala environments
+(ScalaJS and Scala Native).
+
+### SBT and IntellijIDEA
+
+There is no sane way to exclude some projects from an SBT build according to some criteria. You may write something like
+
+```scala
+lazy val conditionalProject = if (condition) {
+  project.in(...)
+} else {
+  null
+}
+```
+
+But it's ugly, inconvenient and hard to compose.
+
+And cross-platform projects were always a pain. It takes at least twice more time to build a cross-project.
+And there is no way to, for example, omit all the ScalaJS projects from a build.
+
+For example, IDEA frequently [fails](https://youtrack.jetbrains.com/issue/SCL-16128) to compile any projects
+if `sbt-crossproject` plugin is on. IDEA [cannot run tests](https://youtrack.jetbrains.com/issue/SCL-14640)
+in cross-projects. And so on.
+
+SBT builds become very verbose and hard to maintain when you use cross-projects.
+Usually you have to write at least 3 redundant expressions per artifact.
 
 ### sbtgen: a prototype of RBR-flow tool
 
+We've created our own [dirty tool](https://github.com/7mind/sbtgen) which prototypes the approach we wish to have.
+Essentially, it's a library intended to be used in an [ammonite script](https://ammonite.io/#ScalaScripts) which takes
+declarative project definitions and emits SBT build files.
+
+You may find a real project using it [here](https://github.com/7mind/izumi).
+In case you want to play with it you would need [Coursier](https://get-coursier.io/) installed.
+After you clone the project you may try the following commands:
+
+```bash
+# generates pure JVM project
+./sbtgen.sc
+
+# generates JVM/JS cross-project
+./sbtgen.sc --js
+
+# generates pure JVM project for just one of our components
+./sbtgen.sc -u distage
+```
+
+Currently `sbtgen` is a very simple and dirty prototype but it made our team happy.
+Now it's easy to release, when we need it we may choose what to work on, what to build and what to test.
+Also, surprisingly, SBT startup time is lot shorter when we generate our projects instead of using
+sophisticated plugins to avoid settings duplication.
+
+I don't encourage you to use `sbtgen`, but next time you think about organizing your code try to consider RBR flow even
+if you would have to write your very own code generator.
+
+I may say for sure that you will not be disappointed.
+
 ### Things to do
+
+1. `sbtgen` needs to support multi-repository layouts. At this point all the source code needs to be kept together with the build descriptor,
+2. I think such functionality should be incorporated into SBT. There are some plugins ([sbt-projectmatric](http://eed3si9n.com/parallel-cross-building-using-sbt-projectmatrix) and [siracha](http://eed3si9n.com/hot-source-dependencies-using-sbt-sriracha)) which make SBT projects kinda configurable and less rigid but they are very far from what we actually need.
