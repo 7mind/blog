@@ -20,11 +20,12 @@ We created a draft of a tool implementing our approach for Scala projects using 
 Good points of monorepo layout are:
 
 1. **Coherence**: you always have coherent codebase which represents all your work.
-   You may build all the components of your product together and had good guarantees
+   You may build all the product components together and have good guarantees
    of their compatibility.
    When you make a change and your build finishes your are fine, you don't have to
-   modify and test any other repository/component which may be affected by your change,
-   you may always
+   modify and test any other repository/component which may be affected by the change,
+   you may always perform any global operations globally with a single command and be
+   sure that there will be no discrepancies between expected and actual codebase state.
 2. **Cheap workflows**: you may use just one CI job, you can easily release and deploy
    your components together, you may easily refactor the code.
 
