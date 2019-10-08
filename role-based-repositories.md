@@ -1,14 +1,13 @@
-Monorepo or Multirepo? Role-Based Repositories
-==============================================
+# Monorepo or Multirepo? Role-Based Repositories
 
 ## Summary
 
 When you have a lot of code it's always hard to find a proper approach organize your code.
 
 Typically engineers choose between monorepo and multirepo layouts. Both approaches have well-known
-advantages and disadvantages which significantly affects team productivity.
+advantages and disadvantages which significantly affect team productivity.
 
-It's possible to establish a combined workflow, keeping all the advantages of multirepo layout but
+It's possible to establish a combined workflow, keeping all the advantages of a multirepo layout but
 not giving up any positive traits of monorepo layout.
 
 We created a draft of a tool implementing our approach for Scala projects using SBT.
@@ -17,10 +16,10 @@ We created a draft of a tool implementing our approach for Scala projects using 
 
 ### Monorepo: good and bad
 
-Good points of monorepo layout are:
+Good points of a monorepo layout are:
 
 1. **Coherence**: you always have coherent codebase which represents all your work.
-   You may build all the product components together and have good guarantees
+   You may build all product components together and have good guarantees
    of their compatibility.
    When you make a change and your build finishes your are fine, you don't have to
    modify and test any other repository/component which may be affected by the change,
@@ -35,13 +34,13 @@ But there are significant shortcomings:
    they should not use. So, big projects in a monorepo have a tendency to
    degrade and become unmaintainable over time.
    It's possible to enforce a strict code review and artifact layouting preventing
-   such a degradation but it's not easy and it's time consuming,
+   such degradation but it's not easy and it's time consuming,
 2. **Build time**: in case you have a monolithic project in a monorepo you have to
    build (and often test) all the components together. It may be addressed by an
-   incremental compiler but it does not solve all the issues. Also it may be addressed
+   incremental compiler but it does not solve all the issues. Also it may be tackled
    by keeping independent projects within one repository but in that case most of the
     multirepo shorcomings (see below) apply,
-3. **Merge conflicts**: teams working in monorepo environment have to maintain a good VCS
+3. **Merge conflicts**: teams working in a monorepo environment have to maintain a good VCS
    flow to avoid interference. While it's a very good idea to teach engineers how to use
    GIT properly, the discipline doesn't come for free.
 4. **VCS actions take time**: when you host a huge project (like Chromium) in GIT it may
@@ -60,14 +59,14 @@ Though multirepo is a disaster:
 
 1. **Global refactorings** that affect a shared component are a real pain, even simple rename cannot
    be done in one click,
-2. It's may be hard to perform any kind of **integration**. When you have multiple components you
-   have to build a comprehensive orchestration solutions for your integration testing and deployments,
+2. It may be hard to perform any kind of **integration**. When you have multiple components you
+   have to build a comprehensive orchestration solution for your integration testing and deployments,
    you have to setup sophisticated CI flows, etc, etc,
 3. In case your release flow involves several components - it's always a real pain.
 
 These things are especially bad when you have some explicit or implicit dependencies between your
 components which is a typical case, usually we have at least one shared library (aka SDK) and many
-or all our components (aka microservices) depend on that library.
+or all our components (aka microservices) depend on it.
 
 ## The solution
 
@@ -88,7 +87,7 @@ For example we may assign `sdk`, `iam` and `catalog` projects to "infrastructure
 `billing` and `analytics` to "finance" team and `bidding` to "store" team.
 
 Imagine that you have a magic tool `project` allowing us to choose which
-projects we want to work on and set up the environment:
+projects we want to work on and set up the corresponding environment:
 
 ```bash
 # Prepares workspace for all our components
@@ -109,7 +108,7 @@ This tool would need some kind of declarative description of our product stored 
 The rest can be as flexible as we wish. For example, in case we don't want to keep all our source code in one repository,
 the tool may pull the components from different repositories, take care of commits, etc, etc.
 
-We may say that our repository have *roles* and at any time we may choose which roles we wish to *activate*.
+We may say that our repository has *roles* and at any time we may choose which roles we wish to *activate*.
 So, we may call this approach "Role-Based Repository", or RBR.
 
 Such a tool would solve most of the problems. When we need to perform a global refactoring we may generate all-in-one project.
@@ -142,7 +141,7 @@ But it's ugly, inconvenient and hard to compose.
 And cross-platform projects were always a pain. It takes at least twice more time to build a cross-project.
 And there is no way to, for example, omit all the ScalaJS projects from a build.
 
-For example, IDEA frequently [fails](https://youtrack.jetbrains.com/issue/SCL-16128) to compile any projects
+For example, IDEA frequently [fails](https://youtrack.jetbrains.com/issue/SCL-16128) to compile any project
 if `sbt-crossproject` plugin is on. IDEA [cannot run tests](https://youtrack.jetbrains.com/issue/SCL-14640)
 in cross-projects. And so on.
 
@@ -172,7 +171,7 @@ After you clone the project you may try the following commands:
 
 Currently `sbtgen` is a very simple and dirty prototype but it made our team happy.
 Now it's easy to release, when we need it we may choose what to work on, what to build and what to test.
-Also, surprisingly, SBT startup time is lot shorter when we generate our projects instead of using
+Also, surprisingly, SBT startup time is a lot shorter when we generate our projects instead of using
 sophisticated plugins to avoid settings duplication.
 
 I don't encourage you to use `sbtgen`, but next time you think about organizing your code try to consider RBR flow even
