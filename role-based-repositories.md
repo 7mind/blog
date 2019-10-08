@@ -148,7 +148,7 @@ in cross-projects. And so on.
 SBT builds become very verbose and hard to maintain when you use cross-projects.
 Usually you have to write at least 3 redundant expressions per artifact.
 
-### sbtgen: a prototype of RBR-flow tool
+### sbtgen: a prototype of a tool for RBR flow
 
 We've created our own [dirty tool](https://github.com/7mind/sbtgen) which prototypes the approach we wish to have.
 Essentially, it's a library intended to be used in an [ammonite script](https://ammonite.io/#ScalaScripts) which takes
