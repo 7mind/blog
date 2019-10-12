@@ -185,6 +185,7 @@ I may say for sure that you will not be disappointed.
 2. I think such functionality should be incorporated into SBT. There are some plugins ([sbt-projectmatric](http://eed3si9n.com/parallel-cross-building-using-sbt-projectmatrix) and [siracha](http://eed3si9n.com/hot-source-dependencies-using-sbt-sriracha)) which make SBT projects kinda configurable and less rigid but they are very far from what we actually need.
 
 
-### P.S.
+## P.S.
 
-The idea of roles is very useful in many different domains. You may read about our project, [distage](https://izumi.7mind.io/latest/release/doc/distage/index.html), a module system with an automatic solver for Scala. It allows you to build multi-role applications.
+The idea of roles is very useful in many different domains. For example we may fuse microservices into "flexible monoliths", check our [slides](https://github.com/7mind/slides/blob/master/02-roles/target/roles.pdf)
+You may also read about our project, [distage](https://izumi.7mind.io/latest/release/doc/distage/index.html), a module system with an automatic solver for Scala. It allows you to build multi-role applications.
