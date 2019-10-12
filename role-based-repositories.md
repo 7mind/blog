@@ -189,3 +189,5 @@ I may say for sure that you will not be disappointed.
 
 The idea of roles is very useful in many different domains. For example we may fuse microservices into "flexible monoliths", check our [slides](https://github.com/7mind/slides/blob/master/02-roles/target/roles.pdf)
 You may also read about our project, [distage](https://izumi.7mind.io/latest/release/doc/distage/index.html), a module system with an automatic solver for Scala. It allows you to build multi-role applications.
+
+You may follow me on [twitter](https://twitter.com/shirshovp).
