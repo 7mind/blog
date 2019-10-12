@@ -2,7 +2,7 @@
 
 ## Summary
 
-When you have a lot of code it's always hard to find a proper approach organize your code.
+When you have a lot of code it's always hard to find a proper approach to organize your code.
 
 Typically engineers choose between monorepo and multirepo layouts. Both approaches have well-known
 advantages and disadvantages which significantly affect team productivity.
