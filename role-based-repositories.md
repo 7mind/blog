@@ -182,7 +182,7 @@ I may say for sure that you will not be disappointed.
 ### Things to do
 
 1. `sbtgen` needs to support multi-repository layouts. At this point all the source code needs to be kept together with the build descriptor,
-2. I think such functionality should be incorporated into SBT. There are some plugins ([sbt-projectmatric](http://eed3si9n.com/parallel-cross-building-using-sbt-projectmatrix) and [siracha](http://eed3si9n.com/hot-source-dependencies-using-sbt-sriracha)) which make SBT projects kinda configurable and less rigid but they are very far from what we actually need.
+2. I think such functionality should be incorporated into SBT. There are some plugins ([sbt-projectmatrix](http://eed3si9n.com/parallel-cross-building-using-sbt-projectmatrix) and [siracha](http://eed3si9n.com/hot-source-dependencies-using-sbt-sriracha)) which make SBT projects kinda configurable and less rigid but they are very far from what we actually need.
 
 
 ## P.S.
