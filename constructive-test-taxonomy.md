@@ -8,8 +8,6 @@ it's hard to make good tests and it's not easy to formalize which tests are good
 We have created own test taxonomy, an alternative to classic Unit/Functional/Integration trinity,
 allowing engineers to establish useful guidelines for their work on test suites.
 
-We also created a Dependency Injection mechanism for Scala making it a lot easier to write good test suites.
-
 ## The problem
 
 We all write tests. Most of us do it regularly. Many of us consider tests as important as our business logic is because tests establish important contracts and greatly reduce maintenance costs.
