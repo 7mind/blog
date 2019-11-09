@@ -196,4 +196,4 @@ You may follow me on [twitter](https://twitter.com/shirshovp).
 
 ### Nov/2019
 
-The author of a similar tool for .NET/C# projects approached me recently. [Here](https://github.com/CK-Build/CKli/) you may find his tool. I think it's a good proof showing that the idea is viable. And I think that we need new flexible polyglot build tools supporting role-based approach (Bazel?). I have a computational model suitable for such tools, and one day I'll make another post about it.
+The author of a similar tool for .NET/C# and JS projects approached me recently. [Here](https://github.com/CK-Build/CKli/) you may find his tool. I think it's a good proof showing that the idea is viable. And I think that we need new flexible polyglot build tools supporting role-based approach (Bazel?). I have a computational model suitable for such tools, and one day I'll make another post about it.
