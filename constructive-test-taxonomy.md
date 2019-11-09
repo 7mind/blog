@@ -154,8 +154,8 @@ There is a simple but powerful tactic which helps us a lot:
 
 1. We design our code and tests the way we test most of code through interfaces,
 2. We create a "dummy" or "mock" implementation for every single entity which communicates with the outer world,
-3. For each abstract test we create at least two implementations: one wired with production implementations, another one --- with dummy ones,
-4. We skip "production" tests when they cannot be run (a service is not available, etc).
+3. For each abstract test, we create at least two implementations: one wired with production implementations, another one --- with dummy ones,
+4. We skip "production" tests when they cannot be run (service is not available, etc).
 
 Previously we've been doing it manually and even it that case it worths it.
 
