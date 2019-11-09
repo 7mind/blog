@@ -161,6 +161,15 @@ Previously we've been doing it manually and even it that case it worths it.
 
 Now we automated it.
 
+### Mocks vs Dummies
+
+Many engineers love to create mocks using automatic mocking frameworks, like Mockito.
+And usually, when people say "mock" they mean "automatic mocks".
+From our experience, in general it's a bad idea to use automated mocks. Usually, they work in runtime. They are slow.
+And what is truly important --- they break encapsulation and rarely survive refactorings.
+
+We prefer to create mocks manually (using in-memory data structures and simple concurrency primitives). We call them "dummies" to avoid ambiguity. And we strongly prefer dummies to automatic mocks --- they cost a bit more when you code but they save you a lot while you maintain.
+
 ### An upcoming talk
 
 A good module system and/or dependency injection framework may be very useful if you wish to make your tests fast and reliable. We are going to make a talk at [Functional Scala](https://www.functionalscala.com/) regarding our bleeding-edge approaches to testing and how [distage](https://izumi.7mind.io/latest/release/doc/distage/index.html), our dependency injection framework and module system with an automatic solver for Scala may help you to cut your development costs.
