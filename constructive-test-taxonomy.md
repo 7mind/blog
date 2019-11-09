@@ -125,11 +125,14 @@ The tests which do not interact with something beyond our control may be called 
 
 Now we have several axes, so we may build a multidimensional "space" consisting of at least `3*3*4=36` test classes. Also, we may use "distance" to the zero point as a simple scalar metric allowing us to roughly estimate which tests are "better".
 
+![Constructive Tests Space](media/ctt.jpg)
+
+Two blue boxes in the near the "zero" correspond to two test classes having highest value for us - "Contractual-Blackbox-Atomic" and ""Contractual-Blackbox-Group".
+
 Also, you may try to use the following pseudo-formula to roughly estimate your maintenance costs associated with a test:
 
 `MaitenanceTime ~ (Encapsulation_Weight * Atomicity_Weight * Intention_Weight ) / √(coverage)`
 
-![Constructive Tests Space](media/ctt.jpg)
 
 
 ### Your very own axis
