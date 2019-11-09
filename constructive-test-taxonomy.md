@@ -61,11 +61,11 @@ Let's build a better one.
 Let's assume that
 
 1. We may assign an arbitrary amount of *tags* to a test,
-2. We have several predefined tag sets
-3. We may assign no more than one tag from each of the sets to a test --- in case we want more than one the test may be split,
+2. We have several predefined sets of tags
+3. We may assign no more than one tag from each of the sets to a test --- in case we want more than one, the test may be split,
 4. We may establish a full or partial order on each of the sets and assign weights to the elements.
 
-Let's call these sets "Axis" and try to come up with some useful axis.
+Let's call such a set "Axis" and try to come up with some useful axes.
 
 ### Intention Axis
 
@@ -75,7 +75,7 @@ Most common intentions are:
 
 1. To test some "specifications", "contracts" or "behaviours" of our code. Let's call such tests *contractual*,
 2. When we discover an issue in our code we usually write a test confirming it, fix it and keep the test as a *regression* test,
-3. When we know a problem but cannot fix it due to design issue broken external library or whatever else we may write a *progression* test confirming incorrect behaviour (just in case this test type is very underestimated),
+3. When we know the problem, but cannot fix it due to a design issue, a broken external library or whatever else, we may write a *progression* test confirming incorrect behaviour (just in case this type of test is very underestimated),
 4. When we need to check the performance of our code we write *benchmarks*.
 
 So, our first axis is called "Intention" and has possible values `{ Contractual | Regression | Progression | Benchmark }`.
@@ -92,7 +92,7 @@ A test may test just interfaces not knowing anything about implementations behin
 
 Blackbox tests do not break encapsulation and can survive many refactorings because of that. It's a very important property, so we should always try to write Blackbox tests and avoid Whitebox ones at all costs.
 
-Other tests may check just interfaces but also verify some side-effects (a file created on the disk) which cannot be (or are hard to) explicitly expressed. Let's  call them *effectual* tests. We may write them but it's always better to avoid it when possible.
+Other tests may use only interfaces, but also verify some side-effects (a file created on the disk) which cannot be, or are hard to explicitly express. Let's call them *effectual* tests. We may write them but it's always better to avoid it when possible.
 
 Now we may define our "Encapsulation" axis:
 
@@ -136,12 +136,12 @@ Also, you may try to use the following pseudo-formula to roughly estimate your m
 ### Your very own axis
 
 Taxonomies are hard and it's not so easy to build a perfect one.
-The one we propose is not perfect as well. You may give it a try, it's useful, but in case you are unhappy with something, nothing can prevent you from adding your axes or altering ones presented in this post.
+The one we propose is not perfect as well. You may give it a try, it's useful, but in case you are unhappy with something, nothing can prevent you from adding your axes or altering the ones presented in this post.
 Every team and project has its own needs and workflows so it may be a good idea to tailor a proper vocabulary for your specific needs. A proper test taxonomy may make a very useful guideline, help establish good practices and reduce maintenance costs. Just try to be precise and don't forget to make guides and notes.
 
 ### Observations and conclusions
 
-1. All the axis miss the zero-weighted element. What would correspond to it? Contracts expressed in your design and types. When your system does not allow incorrect state there is nothing to test and maintenance cost may be nearly zero (or maybe not, it may be hard to extend a system with rigid contracts specified in types),
+1. All of the axes miss the zero element. What would correspond to it? Contracts expressed in your design and types. When your system does not allow incorrect states there is nothing to test and maintenance cost may be nearly zero (or maybe not, it may be hard to extend a system with rigid contracts specified in types),
 2. You may document your tests adding abbreviations corresponding to the test type. For example "CBG" may stand for a "Contractual-Blackbox-Group" test.
 
 ## Modules, Dependency Injection, and better tests
@@ -150,7 +150,7 @@ Every team and project has its own needs and workflows so it may be a good idea 
 
 There is a simple but powerful tactic which helps us a lot:
 
-1. We design our code and tests the way we test most of code through interfaces,
+1. We design our code and tests to be able to test most of it through interfaces,
 2. We create a "dummy" or "mock" implementation for every single entity which communicates with the outer world,
 3. For each abstract test, we create at least two implementations: one wired with production implementations, another one --- with dummy ones,
 4. We skip "production" tests when they cannot be run (service is not available, etc).
@@ -166,12 +166,11 @@ And usually, when people say "mock" they mean "automatic mocks".
 From our experience, in general it's a bad idea to use automated mocks. Usually, they work in runtime. They are slow.
 And what is truly important --- they break encapsulation and rarely survive refactorings.
 
-We prefer to create mocks manually (using in-memory data structures and simple concurrency primitives). We call them "dummies" to avoid ambiguity. And we strongly prefer dummies to automatic mocks --- they cost a bit more when you code but they save you a lot while you maintain.
+We prefer to create mocks manually (using in-memory data structures and simple concurrency primitives). We call them "dummies" to avoid ambiguity. And we strongly prefer dummies to automatic mocks --- they cost a bit more when you code, but they save you a lot of maintenance effort.
 
 ### An upcoming talk
 
-A good module system and/or dependency injection framework may be very useful if you wish to make your tests fast and reliable. We are going to make a talk at [Functional Scala](https://www.functionalscala.com/) regarding our bleeding-edge approaches to testing and how [distage](https://izumi.7mind.io/latest/release/doc/distage/index.html), our dependency injection framework and module system with an automatic solver for Scala may help you to cut your development costs.
-
+A good module system and/or dependency injection framework may be very useful if you wish to make your tests fast and reliable. We are going to make a talk at [Functional Scala](https://www.functionalscala.com/) regarding our bleeding-edge approaches to testing and how [distage](https://izumi.7mind.io/latest/release/doc/distage/index.html), our dependency injection framework for FP Scala may help you cut your development costs.
 
 ## P.S.
 
