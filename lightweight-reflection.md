@@ -623,7 +623,7 @@ I provided some basic insights into the problem. In case you wish to look at the
 
 We would welcome any contributions into our library and feel free to use this post and our code as a starting point for your own implementation.
 
-![Draw the rest of the damn Owl](owl.jpg)
+![Draw the rest of the damn Owl](media/owl.jpg)
 
 ## Conclusion
 
