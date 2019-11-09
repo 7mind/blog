@@ -191,3 +191,9 @@ The idea of roles is very useful in many different domains. For example we may f
 You may also read about our project, [distage](https://izumi.7mind.io/latest/release/doc/distage/index.html), a module system with an automatic solver for Scala. It allows you to build multi-role applications.
 
 You may follow me on [twitter](https://twitter.com/shirshovp).
+
+## Updates
+
+### Nov/2019
+
+The author of a similar tool for .NET/C# projects approached me recently. [Here](https://github.com/CK-Build/CKli/) you may find his tool. I think it's a good proof showing that the idea is viable. And I think that we need new flexible polyglot build tools supporting role-based approach (Bazel?). I have a computational model suitable for such tools, and one day I'll make another post about it.
