@@ -27,7 +27,7 @@ Though the question is: how do we write better tests? How do we choose the best 
 
 It's surprisingly hard to answer that question and I think that one of the reasons for that is the fact that we... just miss proper vocabulary and improperly use the existing one.
 
-We used to classify tests using words like "Unit", "Functional" and "Integration" (also "System", "Performance", "Acceptance"). And we think something like "unit tests are better than functional tests and integration tests are the worse". We also know that it's good to have high coverage.
+We used to classifying tests using words like "Unit", "Functional" and "Integration" (also "System", "Performance", "Acceptance"). And we think something like "unit tests are better than functional tests and integration tests are the worse". We also know that it's good to have high coverage.
 
 Usual definitions are:
 
