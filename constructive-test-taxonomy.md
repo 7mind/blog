@@ -127,7 +127,7 @@ Now we have several axes, so we may build a multidimensional "space" consisting 
 
 ![Constructive Tests Space](media/ctt.jpg)
 
-Two blue boxes in the near the "zero" correspond to two test classes having highest value for us - "Contractual-Blackbox-Atomic" and ""Contractual-Blackbox-Group".
+Two blue boxes near the "zero" correspond to two test classes having the highest value for us --- "Contractual-Blackbox-Atomic" and "Contractual-Blackbox-Group".
 
 Also, you may try to use the following pseudo-formula to roughly estimate your maintenance costs associated with a test:
 
@@ -148,7 +148,23 @@ Every team and project has its own needs and workflows so it may be a good idea 
 
 ## Modules, Dependency Injection, and better tests
 
+### Dual Tests Tactic
+
+There is a simple but powerful tactic which helps us a lot:
+
+1. We design our code and tests the way we test most of code through interfaces,
+2. We create a "dummy" or "mock" implementation for every single entity which communicates with the outer world,
+3. For each abstract test we create at least two implementations: one wired with production implementations, another one --- with dummy ones,
+4. We skip "production" tests when they cannot be run (a service is not available, etc).
+
+Previously we've been doing it manually and even it that case it worths it.
+
+Now we automated it.
+
+### An upcoming talk
+
 A good module system and/or dependency injection framework may be very useful if you wish to make your tests fast and reliable. We are going to make a talk at [Functional Scala](https://www.functionalscala.com/) regarding our bleeding-edge approaches to testing and how [distage](https://izumi.7mind.io/latest/release/doc/distage/index.html), our dependency injection framework and module system with an automatic solver for Scala may help you to cut your development costs.
+
 
 ## P.S.
 
