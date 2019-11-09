@@ -141,7 +141,7 @@ Every team and project has its own needs and workflows so it may be a good idea 
 
 ### Observations and conclusions
 
-1. All of the axes miss a zero-weighted element. What would correspond to it? Contracts expressed in your design and types. When your system does not allow incorrect states there is nothing to test and maintenance cost may be nearly zero (or maybe not, it may be hard to extend a system with rigid contracts specified in types),
+1. All of the axes miss the zero element. What would correspond to it? Contracts expressed in your design and types. When your system does not allow incorrect states there is nothing to test and maintenance cost may be nearly zero (or maybe not, it may be hard to extend a system with rigid contracts specified in types),
 2. You may document your tests adding abbreviations corresponding to the test type. For example "CBG" may stand for a "Contractual-Blackbox-Group" test.
 
 ## Modules, Dependency Injection, and better tests
