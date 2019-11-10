@@ -156,10 +156,10 @@ Sounds interesting, we'll try to give it a shot.
 There is a simple but powerful tactic which helps us a lot:
 
 1. We design our code and tests to be able to test most of it through interfaces,
-2. We create a "dummy" or "mock" implementation for every single entity which communicates with the outer world,
+2. We create a "dummy" or "mock" implementation for every single entity which communicates with the outer world (let's call them integration points),
 3. For each abstract test, we create at least two implementations: one wired with production implementations, another one --- with dummy ones,
 4. We skip "production" tests when they cannot be run (service is not available, etc),
-5. We try to avoid any polymorphism in any non-leaf nodes of our dependency tree.
+5. We try to make our integration points as independent as possible to avoid combinatoric explosions of possible configurations.
 
 Such an approach helps you to enforce encapsulation, allows you to code business logic with blazing fast tests and postopone integration works.
 
