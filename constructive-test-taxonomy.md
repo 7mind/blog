@@ -184,7 +184,7 @@ Sometimes it may be hard to design properly because we may use outdated and impr
 It's always a good idea to set your mind free and think not being constrained by some artifical legacy boundaries.
 Traditional testing approach and taxonomy are not perfect and it may be a good idea to scrap them and think on your own ---
 in the end you may notice that your code quality and team productivity increased and your design become more resilent.
->>>>>>> updates
+updates
 
 ## P.S.
 
