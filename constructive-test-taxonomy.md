@@ -131,18 +131,23 @@ Also, you may try to use the following pseudo-formula to roughly estimate your m
 
 `MaitenanceTime ~ (Encapsulation_Weight * Atomicity_Weight * Intention_Weight ) / √(coverage)`
 
-
-
 ### Your very own axis
 
 Taxonomies are hard and it's not so easy to build a perfect one.
 The one we propose is not perfect as well. You may give it a try, it's useful, but in case you are unhappy with something, nothing can prevent you from adding your axes or altering the ones presented in this post.
 Every team and project has its own needs and workflows so it may be a good idea to tailor a proper vocabulary for your specific needs. A proper test taxonomy may make a very useful guideline, help establish good practices and reduce maintenance costs. Just try to be precise and don't forget to make guides and notes.
 
-### Observations and conclusions
+### Ideas and abservations
 
 1. All of the axes miss the zero element. What would correspond to it? Contracts expressed in your design and types. When your system does not allow incorrect states there is nothing to test and maintenance cost may be nearly zero (or maybe not, it may be hard to extend a system with rigid contracts specified in types),
 2. You may document your tests adding abbreviations corresponding to the test type. For example "CBG" may stand for a "Contractual-Blackbox-Group" test.
+
+Our reader from [lobste.rs](https://lobste.rs/s/g8svw5/unit_functional_integration_you_are#c_bnvtki) proposed a couple of interesting alterations to the taxonomy:
+
+1. We may add "Mutability" axis,
+2. We may change "Isolation" axis to be more precise: `Isolation = { expression | method | class | file | package | library | application | host | intranet | internet`
+
+Sounds interesting, we'll try to give it a shot.
 
 ## Modules, Dependency Injection, and better tests
 
@@ -153,11 +158,12 @@ There is a simple but powerful tactic which helps us a lot:
 1. We design our code and tests to be able to test most of it through interfaces,
 2. We create a "dummy" or "mock" implementation for every single entity which communicates with the outer world,
 3. For each abstract test, we create at least two implementations: one wired with production implementations, another one --- with dummy ones,
-4. We skip "production" tests when they cannot be run (service is not available, etc).
+4. We skip "production" tests when they cannot be run (service is not available, etc),
+5. We try to avoid any polymorphism in any non-leaf nodes of our dependency tree.
 
-Previously we've been doing it manually and even it that case it worths it.
+Such an approach helps you to enforce encapsulation, allows you to code business logic with blazing fast tests and postopone integration works.
 
-Now we automated it.
+Previously we've been doing it manually and even it that case it worths it. Now we automated it.
 
 ### Mocks vs Dummies
 
@@ -171,6 +177,14 @@ We prefer to create mocks manually (using in-memory data structures and simple c
 ### An upcoming talk
 
 A good module system and/or dependency injection framework may be very useful if you wish to make your tests fast and reliable. We are going to make a talk at [Functional Scala](https://www.functionalscala.com/) regarding our bleeding-edge approaches to testing and how [distage](https://izumi.7mind.io/latest/release/doc/distage/index.html), our dependency injection framework for FP Scala may help you cut your development costs.
+
+## Conclusion
+
+Sometimes it may be hard to design properly because we may use outdated and imprecise vocabulary.
+It's always a good idea to set your mind free and think not being constrained by some artifical legacy boundaries.
+Traditional testing approach and taxonomy are not perfect and it may be a good idea to scrap them and think on your own ---
+in the end you may notice that your code quality and team productivity increased and your design become more resilent.
+>>>>>>> updates
 
 ## P.S.
 
