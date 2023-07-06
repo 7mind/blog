@@ -4,6 +4,7 @@ title: 7mind.io Blog
 #theme: jekyll-theme-chirpy
 remote_theme: abhinavs/moonwalk
 url: https://blog.7mind.io/
+repository: 7mind/blog
 
 #favicon: "./favicon.png"
 permalink: /:slug
