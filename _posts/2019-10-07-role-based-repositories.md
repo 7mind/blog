@@ -1,3 +1,8 @@
+---
+layout: post
+tags: [infrastructure]
+---
+
 # Monorepo or Multirepo? Role-Based Repositories
 
 ## Summary

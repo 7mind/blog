@@ -1,3 +1,8 @@
+---
+layout: post
+tags: [tdd]
+---
+
 # Unit, Functional, Integration? You are doing it wrong
 
 ## Summary
@@ -123,7 +128,7 @@ The tests which do not interact with something beyond our control may be called 
 
 Now we have several axes, so we may build a multidimensional "space" consisting of at least `3*3*4=36` test classes. Also, we may use "distance" to the zero point as a simple scalar metric allowing us to roughly estimate which tests are "better".
 
-![Constructive Tests Space](media/ctt.jpg)
+![Constructive Tests Space](assets/posts/2019-11-09-ctt.jpg)
 
 Two blue boxes near the "zero" correspond to two test classes having the highest value for us --- "Contractual-Blackbox-Atomic" and "Contractual-Blackbox-Group".
 

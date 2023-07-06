@@ -1,0 +1,21 @@
+navbar_entries:
+  - title: [7mind on GitHub]
+    url: https://github.com/7mind
+
+  - title: [Izumi Project]
+    url: https://github.com/7mind/izumi
+
+  - title: [7mind.io]
+    url: https://7mind.io
+footer_entries:
+  - title: [7mind on GitHub]
+    url: https://github.com/7mind
+
+  - title: [Izumi Project]
+    url: https://github.com/7mind/izumi
+
+  - title: [7mind.io]
+    url: https://7mind.io
+
+  - title: feed
+    url: feed.xml

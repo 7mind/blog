@@ -1,3 +1,8 @@
+---
+layout: post
+tags: [scala3]
+---
+
 Lightweight Scala Reflection and why Dotty needs TypeTags reimplemented
 =======================================================================
 
@@ -614,7 +619,7 @@ The real code is more complicated (it takes care of bound lambda parameters also
 
 In fact these are simple symbolic computations mocking the hard work of the Scala compiler. But they work.
 
-![test log](type-tags-run-example.png)
+![test log](assets/posts/2019-08-07-type-tags-run-example.png)
 
 
 ## The rest of the damn Owl
@@ -623,7 +628,7 @@ I provided some basic insights into the problem. In case you wish to look at the
 
 We would welcome any contributions into our library and feel free to use this post and our code as a starting point for your own implementation.
 
-![Draw the rest of the damn Owl](media/owl.jpg)
+![Draw the rest of the damn Owl](assets/posts/2019-08-07-owl.jpg)
 
 ## Conclusion
 

@@ -1,15 +1,20 @@
+---
+layout: post
+tags: [infrastructure]
+---
+
 No More Orphans
 =================================
 
 If you've ever created a library in the Scala FP ecosystem, you may have faced some tough choices:
 
-- Should my library support Cats? Or Scalaz? Or both? 
+- Should my library support Cats? Or Scalaz? Or both?
 - Should my library be usable without any FP library at all?
 - Should I add integrations with `refined`, `enumeratum`, `slick`, `shapeless`, `circe`, `argonaut` or any other popular library?
 
 All choices here come with their set of trade-offs. If you choose to settle on `cats`, a `scalaz` user may be forced to
-import shims to use your library. 
-If you choose to have no dependencies on an FP lib, your `cats`/`scalaz` users will have to write missing instances and 
+import shims to use your library.
+If you choose to have no dependencies on an FP lib, your `cats`/`scalaz` users will have to write missing instances and
 integrations themselves! You may choose to provide 'orphan' implicits – implicits defined outside of your types' companion
 objects – in separate modules such as `mylib-cats` and `mylib-scalaz`. Unlike implicit instances defined in companion objects,
 orphan implicits have to be imported to be picked up by the compiler, your users will be forced to manually find and import
@@ -22,7 +27,7 @@ import mylib.interop.cats._
 
 If your library is foundational to an application, such as a database driver or an effect system, nearly every file in user's
 application might have to repeat these magic imports.
-Worse still, your library might not even be the only library that exports orphans. The import tax compounds for every 
+Worse still, your library might not even be the only library that exports orphans. The import tax compounds for every
 other library that follows this pattern!
 
 ```scala
@@ -125,7 +130,7 @@ object MyBox {
     override def pure[A](a: A): MyBox[A] = MyBox(a)
     override def flatMap[A, B](fa: MyBox[A])(f: A => MyBox[B]): MyBox[B] = f(fa.get)
   }
-  
+
   implicit val optionalCatsFunctorForMyBox: cats.Functor[MyBox] = new cats.Functor[MyBox] {
     def map[A, B](fa: MyBox[A])(f: A => B): MyBox[B] =
       MyBox(f(fa.get))
@@ -133,7 +138,7 @@ object MyBox {
 }
 ```
 
-Without a `cats` dependency, all implicit searches mentioning `MyBox` start failing! 
+Without a `cats` dependency, all implicit searches mentioning `MyBox` start failing!
 
 ```scala
 object WithoutCats {
@@ -157,7 +162,7 @@ Optional Typeclass Instances
 ----------------------------
 
 Naive ways of hiding the type won't work – generic parametrization _will_ successfully obscure the type in bytecode, the return type will become `java.Object`,
-but the Scala compiler will see through it and crash anyway. 
+but the Scala compiler will see through it and crash anyway.
 
 ```scala
 object MyBox extends MyBoxFunctor[cats.Functor]
@@ -177,7 +182,7 @@ us the correct type when the library is present and pass otherwise. This functio
 ```scala
 class GimmeCatsFunctor[Functor[F[_]]]
 object GimmeCatsFunctor {
-  implicit val gimmeCatsFunctor: GimmeCatsFunctor[cats.Functor] = new GimmeCatsFunctor[cats.Functor] 
+  implicit val gimmeCatsFunctor: GimmeCatsFunctor[cats.Functor] = new GimmeCatsFunctor[cats.Functor]
 }
 ```
 
@@ -213,7 +218,7 @@ private object CatsMonad {
 
 After we 'assign' `M` to be `cats.Monad`, we summon it accordingly, then use `asInstanceOf` on the result since we already know the type underneath.
 We never need an actual instance of `CatsMonad`, so we can set its instance to `null` and save our users a heap allocation.
-Lastly, making all of this machinery `private` ensures there's no way to mess up our scheme and cause a failed cast. 
+Lastly, making all of this machinery `private` ensures there's no way to mess up our scheme and cause a failed cast.
 
 These two patterns let us define `Optional` non-orphan instances that will just work with no imports when users need them.
 
@@ -353,4 +358,4 @@ What libraries currently use this pattern?
 - [logstage](https://izumi.7mind.io/latest/release/doc/logstage/index.html) - uses this trick to provide `cats` and `ZIO`-friendly structural logging algebras out of the box without making either a mandatory dependency.
 - [distage](https://izumi.7mind.io/latest/release/doc/distage/index.html) - uses it to support dependency injection [for](https://izumi.7mind.io/latest/release/doc/distage/basics.html#resource-bindings-lifecycle) [cats.effect.Resource](https://typelevel.org/cats-effect/datatypes/resource.html), cats `IO` and `ZIO` out-of-the-box, while still being perfectly usable without effect wrappers.
 
-We hope more libraries follow and reduce the wildcard import tax on the community in favor of optional typeclass instances! 
+We hope more libraries follow and reduce the wildcard import tax on the community in favor of optional typeclass instances!
