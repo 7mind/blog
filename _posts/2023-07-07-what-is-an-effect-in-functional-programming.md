@@ -22,7 +22,9 @@ Some people may [quote](https://stackoverflow.com/a/49132391) an [original paper
 
 > In general, a function of type a → b is replaced by a function of type a → M b. This can be read as a function that accepts an argument of type a and returns a result of type b, with a possible additional effect captured by M. This effect may be to act on state, generate output, raise an exception, or what have you.
 
-Some people might just refer to [an IO-monad](https://typelevel.org/cats-effect/docs/getting-started) as an “Effect” and the same people might give us a [definition](https://typelevel.org/cats-effect/docs/concepts#effects) for “Effect” as vague “An effect is a description of an action (or actions) that will be taken when evaluation happens. One very common sort of effect is IO“.
+Some people might just refer to [an IO-monad](https://typelevel.org/cats-effect/docs/getting-started) as an “Effect” and the same people might give us a [definition](https://typelevel.org/cats-effect/docs/concepts#effects) for “Effect” as vague as
+
+> An effect is a description of an action (or actions) that will be taken when evaluation happens. One very common sort of effect is IO.
 
 So, things may go *wild* when we chat about effects.
 
