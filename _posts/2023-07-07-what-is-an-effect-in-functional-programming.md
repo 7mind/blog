@@ -55,8 +55,10 @@ Alike to **Effects** and **Affects** we might split **Side Effects** into two cl
 Here is a short table of the harmonized terms.
 
 
-| Haskell Term         | Meaning                                                                                                                | Harmonized term                     |
-| -------------------- | ---------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
-| Effect               | Abstract additional property to a primary concept                                                                      | **Aspect**                          |
-| Side-Effect          | Referential transparency violation                                                                                     | **Effect** and **Affect**           |
-| Unwanted side effect | Unintended violation of important contract caused by leaking abstractions in programming model, runtime, hardware, etc | **Side-Effect** and **Side-Affect** |
+|  Meaning | Haskell Term | Harmonized term |
+| -------- | ------------ | --------------- |
+| Abstract additional property to a primary concept | Effect | **Aspect** |
+| Referential transparency violation | Side-Effect | **Effect** and **Affect** |
+| Unintended violation of important contract caused by leaking abstractions in programming model, runtime, hardware, etc | Unwanted side effect | **Side-Effect** and **Side-Affect** |
+| Composable way to encode families of I/O **Effects** leveraging the type system and Category Theory concepts | IO-Monad | IO-Monad |
+| Composable way to encode arbitrary **Aspects** | Effect system | **Aspect encoding** |
