@@ -60,5 +60,5 @@ Here is a short table of the harmonized terms.
 | Abstract additional property to a primary concept                                                                      | Effect               | **Aspect**                          |
 | Referential transparency violation                                                                                     | Side-Effect          | **Effect** and **Affect**           |
 | Unintended violation of important contract caused by leaking abstractions in programming model, runtime, hardware, etc | Unwanted side effect | **Side-Effect** and **Side-Affect** |
-| Composable way to encode families of I/O **Effects** leveraging the type system and Category Theory concepts           | IO-Monad             | IO-Monad                            |
+| Composable way to encode families of I/O **Effects** and **Affects** leveraging the type system and Category Theory concepts           | IO-Monad             | IO-Monad                            |
 | Composable way to encode arbitrary **Aspects**                                                                         | Effect system        | **Aspect encoding**                 |
