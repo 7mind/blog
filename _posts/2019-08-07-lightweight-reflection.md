@@ -1,6 +1,6 @@
 ---
 layout: post
-tags: [scala3]
+tags: [scala, scala3, reflection, graalvm, js]
 ---
 
 Lightweight Scala Reflection and why Dotty needs TypeTags reimplemented

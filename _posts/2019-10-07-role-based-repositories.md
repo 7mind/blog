@@ -1,6 +1,6 @@
 ---
 layout: post
-tags: [infrastructure]
+tags: [SDLC, infrastructure]
 ---
 
 # Monorepo or Multirepo? Role-Based Repositories

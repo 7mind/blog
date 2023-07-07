@@ -1,6 +1,6 @@
 ---
 layout: post
-tags: [tdd]
+tags: [SDLC, tdd]
 ---
 
 # Unit, Functional, Integration? You are doing it wrong

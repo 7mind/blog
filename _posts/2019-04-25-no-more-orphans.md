@@ -1,6 +1,6 @@
 ---
 layout: post
-tags: [infrastructure]
+tags: [scala, jvm, infrastructure]
 ---
 
 No More Orphans
