@@ -10,15 +10,17 @@ People often use the terms "effect" and "side effect" when working with function
 
 Newbies and people with different PL backgrounds often ask what these terms mean. Surprisingly, different people in different contexts may mean different things when they use these terms. That induces endless confusion and holy wars.
 
-If you ask ChatGPT this question, it might answer something like “In functional programming, the term “effect” refers to any observable change or interaction that a function or expression can have with the outside world beyond its return value. Effects include actions such as input/output (I/O) operations, mutation of state, network requests, and interactions with external resources like databases or files. An effect is a deviation from the purely functional paradigm, where a function’s behavior is solely determined by its inputs and produces a predictable output. In contrast, an effect introduces an element of uncertainty or nondeterminism, as it may depend on external factors or have side effects that alter the program’s state or interact with the environment.“.
+If you ask ChatGPT this question, it might answer something like
+
+> In functional programming, the term “effect” refers to any observable change or interaction that a function or expression can have with the outside world beyond its return value. Effects include actions such as input/output (I/O) operations, mutation of state, network requests, and interactions with external resources like databases or files. An effect is a deviation from the purely functional paradigm, where a function’s behavior is solely determined by its inputs and produces a predictable output. In contrast, an effect introduces an element of uncertainty or nondeterminism, as it may depend on external factors or have side effects that alter the program’s state or interact with the environment.“.
 
 Thus, ChatGPT thinks that an “Effect” means “breakage of referential transparency”.
 
-If you [check StackOverflow](https://stackoverflow.com/a/33398273) you might see that people think that “breakage of referential transparency” should be called “Side-Effect”, while “Effect” should stand for something what “distinguishes between the actual value and the ‘rest’“ of an abstraction. Wait, what?
+If you [check StackOverflow](https://stackoverflow.com/a/33398273) you might see that some people think that “breakage of referential transparency” should be called “Side-Effect”, while “Effect” should stand for something what “distinguishes between the actual value and the ‘rest’“ of an abstraction. Wait, what?
 
 Some people may [quote](https://stackoverflow.com/a/49132391) an [original paper](http://homepages.inf.ed.ac.uk/wadler/topics/monads.html) which says
 
-In general, a function of type a → b is replaced by a function of type a → M b. This can be read as a function that accepts an argument of type a and returns a result of type b, with a possible additional effect captured by M. This effect may be to act on state, generate output, raise an exception, or what have you.
+> In general, a function of type a → b is replaced by a function of type a → M b. This can be read as a function that accepts an argument of type a and returns a result of type b, with a possible additional effect captured by M. This effect may be to act on state, generate output, raise an exception, or what have you.
 
 Some people might just refer to [an IO-monad](https://typelevel.org/cats-effect/docs/getting-started) as an “Effect” and the same people might give us a [definition](https://typelevel.org/cats-effect/docs/concepts#effects) for “Effect” as vague “An effect is a description of an action (or actions) that will be taken when evaluation happens. One very common sort of effect is IO“.
 
