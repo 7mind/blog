@@ -182,7 +182,7 @@ us the correct type when the library is present and pass otherwise. This functio
 ```scala
 class GimmeCatsFunctor[Functor[F[_]]]
 object GimmeCatsFunctor {
-  implicit val gimmeCatsFunctor: GimmeCatsFunctor[cats.Functor] = new GimmeCatsFunctor[cats.Functor]
+  implicit def gimmeCatsFunctor: GimmeCatsFunctor[cats.Functor] = new GimmeCatsFunctor[cats.Functor]
 }
 ```
 
@@ -212,7 +212,7 @@ object MyMonad {
 
 private sealed trait CatsMonad[M[_[_]]]
 private object CatsMonad {
-  implicit val get: CatsMonad[cats.Monad] = null
+  implicit def get: CatsMonad[cats.Monad] = null
 }
 ```
 
@@ -245,7 +245,7 @@ trait ImpllSemigroupalSemigroupKInvariant[K[_]] extends cats.Semigroupal[K] with
 
 private sealed trait CatsSemigroupalSemigroupKInvariant[F[_[_]]]
 private object CatsSemigroupalSemigroupKInvariant {
-  implicit val get: CatsSemigroupalSemigroupKInvariant[ImpllSemigroupalSemigroupKInvariant] = null
+  implicit def get: CatsSemigroupalSemigroupKInvariant[ImpllSemigroupalSemigroupKInvariant] = null
 }
 ```
 
@@ -276,7 +276,7 @@ Changing this trait to a type alias won't work either:
 ```scala
 private object CatsSemigroupalSemigroupKInvariant {
   type ImpllSemigroupalSemigroupKInvariant[K[_]] = cats.Semigroupal[K] with cats.SemigroupK[K] with cats.Invariant[K]
-  implicit val get: CatsSemigroupalSemigroupKInvariant[ImpllSemigroupalSemigroupKInvariant] = null
+  implicit def get: CatsSemigroupalSemigroupKInvariant[ImpllSemigroupalSemigroupKInvariant] = null
 }
 // [error] Symbol 'type cats.Semigroupal' is missing from the classpath.
 // [error] This symbol is required by 'type mylib.CatsSemigroupalSemigroupKInvariant.ImpllSemigroupalSemigroupKInvariant'.
@@ -349,7 +349,7 @@ Extracting a pattern
 It may be tedious to create a new class for each foreign type we want to declare optional instances for, we can extract
 the pattern into reusable pieces and get rid of `asInstanceOf` calls in the process by carefully crafting equality evidence.
 You may find one possible [implementation](https://github.com/7mind/no-more-orphans/blob/master/mylib/src/main/scala/mylib/pattern/GetTc.scala)
-of this pattern in the [companion repository](https://github.com/7mind/no-more-orphans) for this blog post. The repository
+of this pattern in the [companion repository](https://github.com/7mind/no-more-orphans) for this blog post. (ADDENDUM: "generalized" version of the pattern in GetTc.scala does not work as reliably as the raw pattern documented above and is not portable to Scala 3. The current best reference for this pattern is as it's currently used in izumi project: [OrphanDefs.scala](https://github.com/7mind/izumi/blob/9d3eedfcbaf29bdad4565d0745f746ab7b816be9/fundamentals/fundamentals-orphans/src/main/scala/izumi/fundamentals/orphans/OrphanDefs.scala)) The repository
 also hosts the final versions of [`MyBox`](https://github.com/7mind/no-more-orphans/blob/master/mylib/src/main/scala/mylib/MyBox.scala)
 and [`MyMonad`](https://github.com/7mind/no-more-orphans/blob/master/mylib/src/main/scala/mylib/MyMonad.scala) and a test suite showcasing correct implementation of the pattern.
 
