@@ -35,6 +35,13 @@ jobs:
           JEKYLL_ENV: production
         run: bundle exec jekyll build
 
+      - name: Assert no GitHub Pages base path in output
+        run: |
+          if grep -R "/pages/${{ github.repository }}" _site; then
+            echo "Unexpected '/pages/${{ github.repository }}' links found in _site output"
+            exit 1
+          fi
+
       - name: Upload artifact
         if: github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v3
