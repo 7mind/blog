@@ -157,9 +157,17 @@ div.highlighter-rouge pre code {
 }
 
 .tag {
+  display: inline-block;
+  margin-top: 0.35rem;
+  margin-right: 0.4rem;
+  padding: 0.2rem 0.65rem;
+  border: 1px solid var(--border);
   border-radius: 0;
-  background: color-mix(in srgb, var(--panel) 70%, var(--bg) 30%);
+  background: var(--bg);
   color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
 }
 
 .theme-toggle {
