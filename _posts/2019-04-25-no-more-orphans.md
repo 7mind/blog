@@ -12,7 +12,7 @@ If you've ever created a library in the Scala FP ecosystem, you may have faced s
 - Should my library be usable without any FP library at all?
 - Should I add integrations with `refined`, `enumeratum`, `slick`, `shapeless`, `circe`, `argonaut` or any other popular library?
 
-All choices here come with their set of trade-offs. If you choose to settle on `cats`, a `scalaz` user may be forced to
+All choices here come with their own set of trade-offs. If you choose to settle on `cats`, a `scalaz` user may be forced to
 import shims to use your library.
 If you choose to have no dependencies on an FP lib, your `cats`/`scalaz` users will have to write missing instances and
 integrations themselves! You may choose to provide 'orphan' implicits – implicits defined outside of your types' companion
@@ -25,7 +25,7 @@ import cats.implicits._
 import mylib.interop.cats._
 ```
 
-If your library is foundational to an application, such as a database driver or an effect system, nearly every file in user's
+If your library is foundational to an application, such as a database driver or an effect system, nearly every file in a user's
 application might have to repeat these magic imports.
 Worse still, your library might not even be the only library that exports orphans. The import tax compounds for every
 other library that follows this pattern!

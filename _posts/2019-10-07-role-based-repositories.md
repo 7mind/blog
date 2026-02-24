@@ -7,70 +7,70 @@ tags: [SDLC, infrastructure]
 
 ## Summary
 
-When you have a lot of code it's always hard to find a proper approach to organize your code.
+When you have a lot of code, it's always hard to find the right way to organize it.
 
 Typically engineers choose between monorepo and multirepo layouts. Both approaches have well-known
 advantages and disadvantages which significantly affect team productivity.
 
-It's possible to establish a combined workflow, keeping all the advantages of a multirepo layout but
-not giving up any positive traits of monorepo layout.
+It's possible to establish a combined workflow that keeps all the advantages of a multirepo layout
+without giving up the positive traits of a monorepo layout.
 
-We created a draft of a tool implementing our approach for Scala projects using SBT.
+We created a draft tool that implements our approach for Scala projects using SBT.
 
 ## The problem
 
 ### Monorepo: good and bad
 
-Good points of a monorepo layout are:
+The strengths of a monorepo layout are:
 
-1. **Coherence**: you always have coherent codebase which represents all your work.
+1. **Coherence**: you always have a coherent codebase that represents all your work.
    You may build all product components together and have good guarantees
    of their compatibility.
-   When you make a change and your build finishes your are fine, you don't have to
+   When you make a change and your build finishes, you are done: you don't have to
    modify and test any other repository/component which may be affected by the change,
    you may always perform any global operations globally with a single command and be
-   sure that there will be no discrepancies between expected and actual codebase state.
-2. **Cheap workflows**: you may use just one CI job, you can easily release and deploy
+   sure there will be no discrepancies between expected and actual codebase state.
+2. **Cheap workflows**: you may use just one CI job, and you can easily release and deploy
    your components together, you may easily refactor the code.
 
 But there are significant shortcomings:
 
-1. **Isolation**: monorepo does not prevent engineers from using the code
+1. **Isolation**: a monorepo does not prevent engineers from using code
    they should not use. So, big projects in a monorepo have a tendency to
    degrade and become unmaintainable over time.
-   It's possible to enforce a strict code review and artifact layouting preventing
-   such degradation but it's not easy and it's time consuming,
-2. **Build time**: in case you have a monolithic project in a monorepo you have to
+   It's possible to enforce strict code review and artifact layout rules to prevent
+   such degradation, but it's not easy and it's time-consuming.
+2. **Build time**: if you have a monolithic project in a monorepo, you have to
    build (and often test) all the components together. It may be addressed by an
-   incremental compiler but it does not solve all the issues. Also it may be tackled
+   incremental compiler, but it does not solve all issues. It may also be addressed
    by keeping independent projects within one repository but in that case most of the
-    multirepo shorcomings (see below) apply,
+   multirepo shortcomings (see below) apply.
 3. **Merge conflicts**: teams working in a monorepo environment have to maintain a good VCS
    flow to avoid interference. While it's a very good idea to teach engineers how to use
    GIT properly, the discipline doesn't come for free.
-4. **VCS actions take time**: when you host a huge project (like Chromium) in GIT it may
+4. **VCS actions take time**: when you host a huge project (like Chromium) in Git, it may
    take a lot of time even to perform a checkout. This affects only huge projects and huge teams
    so it's outside of the scope of this post.
 
 ### Multirepo: good and bad
 
-Multirepo layout is always considered as a first answer to any monorepo issues because:
+A multirepo layout is often considered the first answer to monorepo issues because:
 
 1. It enforces strict isolation between independent software components,
 2. It allows people to quickly build independent components,
 3. It allows people not to interfere while working on independent projects.
 
-Though multirepo is a disaster:
+However, multirepo also has serious drawbacks:
 
-1. **Global refactorings** that affect a shared component are a real pain, even simple rename cannot
-   be done in one click,
-2. It may be hard to perform any kind of **integration**. When you have multiple components you
+1. **Global refactorings** that affect a shared component are painful: even simple renames cannot
+   be done in one click.
+2. It may be hard to perform any kind of **integration**. When you have multiple components, you
    have to build a comprehensive orchestration solution for your integration testing and deployments,
-   you have to setup sophisticated CI flows, etc, etc,
-3. In case your release flow involves several components - it's always a real pain.
+   you have to set up sophisticated CI flows, etc.
+3. If your release flow involves several components, it's always painful.
 
-These things are especially bad when you have some explicit or implicit dependencies between your
-components which is a typical case, usually we have at least one shared library (aka SDK) and many
+These things are especially bad when you have explicit or implicit dependencies between your
+components, which is a typical case. Usually we have at least one shared library (aka SDK), and many
 or all our components (aka microservices) depend on it.
 
 ## The solution
@@ -88,10 +88,10 @@ Let's assume that we have a product (an online auction platform, for example) co
 All these projects use one shared SDK named `sdk`.
 
 We may also assume that there would be several teams working on these projects.
-For example we may assign `sdk`, `iam` and `catalog` projects to "infrastructure" team,
+For example, we may assign `sdk`, `iam`, and `catalog` projects to the "infrastructure" team,
 `billing` and `analytics` to "finance" team and `bidding` to "store" team.
 
-Imagine that you have a magic tool `project` allowing us to choose which
+Imagine that you have a magic tool `project` that allows us to choose which
 projects we want to work on and set up the corresponding environment:
 
 ```bash
@@ -110,28 +110,28 @@ project prepare --platforms js,jvm,native :infrastructure
 ```
 
 This tool would need some kind of declarative description of our product stored in a repository.
-The rest can be as flexible as we wish. For example, in case we don't want to keep all our source code in one repository,
+The rest can be as flexible as we want. For example, if we don't want to keep all source code in one repository,
 the tool may pull the components from different repositories, take care of commits, etc, etc.
 
 We may say that our repository has *roles* and at any time we may choose which roles we wish to *activate*.
 So, we may call this approach "Role-Based Repository", or RBR.
 
-Such a tool would solve most of the problems. When we need to perform a global refactoring we may generate all-in-one project.
+Such a tool would solve most of these problems. When we need to perform a global refactoring, we may generate an all-in-one project.
 When we wish to implement a quick patch we may generate a project with just one component.
 When we need to integrate several components we may choose what exactly we need. Etc, etc.
 
 ### The reality
 
-Unfortunately, there is no such a tool which is polyglot, convenient and easy to use.
+Unfortunately, there is no such tool that is polyglot, convenient, and easy to use.
 Something can be done with Bazel, but as far as I know there are no good solutions at this moment
 (October 2019).
 
-And things become bad when we need this for Scala. And especially bad when we need to work with cross-platform Scala environments
+And things get worse when we need this for Scala. They get even worse when we need to work with cross-platform Scala environments
 (ScalaJS and Scala Native).
 
 ### SBT and IntellijIDEA
 
-There is no sane way to exclude some projects from an SBT build according to some criteria. You may write something like
+There is no sane way to exclude some projects from an SBT build based on selected criteria. You may write something like
 
 ```scala
 lazy val conditionalProject = if (condition) {
@@ -143,7 +143,7 @@ lazy val conditionalProject = if (condition) {
 
 But it's ugly, inconvenient and hard to compose.
 
-And cross-platform projects were always a pain. It takes at least twice more time to build a cross-project.
+Cross-platform projects were always painful. It takes at least twice as long to build a cross-project.
 And there is no way to, for example, omit all the ScalaJS projects from a build.
 
 For example, IDEA frequently [fails](https://youtrack.jetbrains.com/issue/SCL-16128) to compile any project
@@ -176,23 +176,23 @@ After you clone the project you may try the following commands:
 
 Currently `sbtgen` is a very simple and dirty prototype but it made our team happy.
 Now it's easy to release, when we need it we may choose what to work on, what to build and what to test.
-Also, surprisingly, SBT startup time is a lot shorter when we generate our projects instead of using
+Also, surprisingly, SBT startup time is much shorter when we generate our projects instead of using
 sophisticated plugins to avoid settings duplication.
 
-I don't encourage you to use `sbtgen`, but next time you think about organizing your code try to consider RBR flow even
-if you would have to write your very own code generator.
+I don't encourage you to use `sbtgen`, but next time you think about organizing your code, consider the RBR workflow even
+if you would have to write your own code generator.
 
-I may say for sure that you will not be disappointed.
+I can say for sure that you will not be disappointed.
 
 ### Things to do
 
 1. `sbtgen` needs to support multi-repository layouts. At this point all the source code needs to be kept together with the build descriptor,
-2. I think such functionality should be incorporated into SBT. There are some plugins ([sbt-projectmatrix](http://eed3si9n.com/parallel-cross-building-using-sbt-projectmatrix) and [siracha](http://eed3si9n.com/hot-source-dependencies-using-sbt-sriracha)) which make SBT projects kinda configurable and less rigid but they are very far from what we actually need.
+2. I think such functionality should be incorporated into SBT. There are some plugins ([sbt-projectmatrix](http://eed3si9n.com/parallel-cross-building-using-sbt-projectmatrix) and [sriracha](http://eed3si9n.com/hot-source-dependencies-using-sbt-sriracha)) that make SBT projects somewhat configurable and less rigid, but they are still far from what we actually need.
 
 
 ## P.S.
 
-The idea of roles is very useful in many different domains. For example we may fuse microservices into "flexible monoliths", check our [slides](https://github.com/7mind/slides/blob/master/02-roles/roles.pdf)
+The idea of roles is very useful in many different domains. For example, we may fuse microservices into "flexible monoliths"; check our [slides](https://github.com/7mind/slides/blob/master/02-roles/roles.pdf).
 You may also read about our project, [distage](https://izumi.7mind.io/latest/release/doc/distage/index.html), a module system with an automatic solver for Scala. It allows you to build multi-role applications.
 
 You may follow me on [twitter](https://twitter.com/shirshovp).
@@ -201,4 +201,4 @@ You may follow me on [twitter](https://twitter.com/shirshovp).
 
 ### Nov/2019
 
-The author of a similar tool for .NET/C# and JS projects approached me recently. [Here](https://github.com/CK-Build/CKli/) you may find his tool. I think it's a good proof showing that the idea is viable. And I think that we need new flexible polyglot build tools supporting role-based approach (Bazel?). I have a computational model suitable for such tools, and one day I'll make another post about it.
+The author of a similar tool for .NET/C# and JS projects approached me recently. [Here](https://github.com/CK-Build/CKli/) you may find his tool. I think it's a good proof that the idea is viable. I also think we need new flexible polyglot build tools that support a role-based approach (Bazel?). I have a computational model suitable for such tools, and one day I'll make another post about it.

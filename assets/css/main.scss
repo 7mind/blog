@@ -4,3 +4,171 @@
 @import "moonwalk";
 @import "list";
 @import "syntax";
+
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap");
+
+:root {
+  color-scheme: light dark;
+  --bg: #f5f5f2;
+  --panel: #fbfbf9;
+  --text: #111111;
+  --muted: #575757;
+  --border: #d4d4cf;
+  --link: #004d40;
+  --link-hover: #00695c;
+}
+
+html[data-theme="light"] {
+  --bg: #f5f5f2;
+  --panel: #fbfbf9;
+  --text: #111111;
+  --muted: #575757;
+  --border: #d4d4cf;
+  --link: #004d40;
+  --link-hover: #00695c;
+}
+
+html[data-theme="dark"] {
+  --bg: #191c1d;
+  --panel: #212527;
+  --text: #e6e8e7;
+  --muted: #b5bcba;
+  --border: #3b4341;
+  --link: #79c8b6;
+  --link-hover: #9de3d3;
+}
+
+@media (prefers-color-scheme: dark) {
+  html[data-theme="auto"] {
+    --bg: #191c1d;
+    --panel: #212527;
+    --text: #e6e8e7;
+    --muted: #b5bcba;
+    --border: #3b4341;
+    --link: #79c8b6;
+    --link-hover: #9de3d3;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  html[data-theme="auto"] {
+    --bg: #f5f5f2;
+    --panel: #fbfbf9;
+    --text: #111111;
+    --muted: #575757;
+    --border: #d4d4cf;
+    --link: #004d40;
+    --link-hover: #00695c;
+  }
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "IBM Plex Mono", "Cascadia Mono", "Liberation Mono", "Menlo", "Consolas", monospace;
+  line-height: 1.55;
+}
+
+.page-content .w {
+  max-width: 960px;
+  margin: 48px auto;
+  padding: 28px 30px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--text);
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+h2 {
+  font-size: 1.05rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+a {
+  color: var(--link);
+}
+
+a:hover,
+a:focus-visible {
+  color: var(--link-hover);
+}
+
+p,
+li,
+strong,
+b,
+em,
+small,
+hr,
+table,
+figcaption {
+  color: var(--text);
+}
+
+.post-date,
+.home-date,
+.credits,
+.subtitle {
+  color: var(--muted);
+}
+
+.dashed {
+  border-top: 1px dashed var(--border);
+}
+
+blockquote,
+p code,
+li code,
+pre code {
+  background: color-mix(in srgb, var(--panel) 75%, var(--bg) 25%);
+  border: 1px solid var(--border);
+}
+
+pre code,
+div.highlighter-rouge pre code {
+  border-radius: 0;
+}
+
+.card {
+  border: 1px solid var(--border);
+  border-radius: 0;
+  background: color-mix(in srgb, var(--panel) 85%, var(--bg) 15%);
+}
+
+.card .header {
+  color: var(--text);
+}
+
+.tag {
+  border-radius: 0;
+  background: color-mix(in srgb, var(--panel) 70%, var(--bg) 30%);
+  color: var(--muted);
+}
+
+.theme-toggle {
+  color: var(--text);
+}
+
+@media (max-width: 720px) {
+  .page-content .w {
+    margin: 16px;
+    padding: 20px;
+  }
+}

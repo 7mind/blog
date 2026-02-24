@@ -1,8 +1,12 @@
 
 ```bash
-bundle lock
-bundle install
+# one-time
+direnv allow
 
-bundle exec jekyll serve --incremental # test
-bundle exec github-pages build # check if it builds
+# local test server
+bundle install
+bundle exec jekyll serve --livereload --incremental
+
+# production-like build verification
+JEKYLL_ENV=production bundle exec jekyll build
 ```

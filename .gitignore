@@ -1,2 +1,6 @@
 .DS_Store
 _site/
+.direnv/
+.bundle/
+vendor/bundle/
+.jekyll-cache/

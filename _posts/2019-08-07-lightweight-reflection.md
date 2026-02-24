@@ -9,7 +9,7 @@ Lightweight Scala Reflection and why Dotty needs TypeTags reimplemented
 ## Summary
 
 `TypeTag` in `scala-reflect` is great but flawed. In this article I provide some observations of my experience of building
-a custom type tag, not depending on `scala-reflect` in runtime, potentially portable to dotty and providing equality and subtype checks. Our usage scenario is: we generate type tags at compile time and check their equality and subtyping at runtime, we don't use them to cast anything and we don't need to generate types at runtime. Our model is not completely correct though it is enough for most of the purposes. **Also I hope that this post may help convince Dotty team to support some form of type tags**, there is a [corresponding ticket](https://github.com/lampepfl/dotty-feature-requests/issues/62) on Dotty bugtracker and a [discussion](https://contributors.scala-lang.org/t/scala-3-and-reflection/3627) on Scala Contributors list. This post is targeting those who have some knowledge of `scala-reflect` and unhappy with it, those who has some knowledge of Scala compiler and it's APIs and any other nerds.
+a custom type tag that does not depend on `scala-reflect` at runtime, is potentially portable to Dotty, and provides equality and subtype checks. Our usage scenario is: we generate type tags at compile time and check their equality and subtyping at runtime; we don't use them to cast anything, and we don't need to generate types at runtime. Our model is not completely correct, though it is enough for most purposes. **I also hope this post may help convince the Dotty team to support some form of type tags**. There is a [corresponding ticket](https://github.com/lampepfl/dotty-feature-requests/issues/62) on the Dotty bug tracker and a [discussion](https://contributors.scala-lang.org/t/scala-3-and-reflection/3627) on the Scala Contributors list. This post targets those who have some knowledge of `scala-reflect` and are unhappy with it, those who have some knowledge of the Scala compiler and its APIs, and other nerds.
 
 ## TLDR: usage example
 
@@ -100,7 +100,7 @@ check(Right("xxx"))
 
 `TypeTag` lets you do a lot more. Essentially, `scala-reflect` and `TypeTag` machinery are chunks of internal compiler data structures and tools exposed directly to the user. Though the most important operations are equality check (`=:=`) and subtype check (`<:<`) --- in case you have them you may implement whatever else you need at least semi-automatically.
 
-Concept of a type tag is a cornerstone for our project --- [distage](https://izumi.7mind.io/latest/release/doc/distage/index.html) --- smart module system for Scala, featuring a solver and a dependency injection mechanism.
+The concept of a type tag is a cornerstone of our project --- [distage](https://izumi.7mind.io/latest/release/doc/distage/index.html) --- a smart module system for Scala featuring a solver and a dependency injection mechanism.
 
 Type tags allows us to turn an arbitrary function into an entity which may be introspected at both compile time and run time ([Scastie](https://scastie.scala-lang.org/Xn6CdjfkRAS8Sx9xhRmn0A)):
 
@@ -124,11 +124,11 @@ println(s"//↳function application: ${fn.fun.apply(Seq(1, "hi"))}")
 Unfortunately, current TypeTag implementation is flawed:
 
 - They [do not support](https://github.com/scala/bug/issues/7686) higher-kinded types, you cannot get a `TypeTag` for `List[_]`,
-- They suffer many [concurrency issues](https://github.com/scala/bug/issues/10766) --- in our case TypeTags were occasionaly failing subtype checks (`child <:< parent`) during `scala-reflect` initialization even if we synchronize on literally everything --- and it's not so trivial to fix them; in worst-case scenario you may even see `Set[Int]` as `Set[String]`,
+- They suffer from many [concurrency issues](https://github.com/scala/bug/issues/10766) --- in our case, TypeTags were occasionally failing subtype checks (`child <:< parent`) during `scala-reflect` initialization even if we synchronized on literally everything --- and it's not trivial to fix them; in the worst-case scenario you may even see `Set[Int]` as `Set[String]`,
 - `scala-reflect` needs *seconds* to initialize.
 
 Moreover, it's still unclear if Scala 3 will support `TypeTag`s or not.
-Some people say it's too hard and recommend to write a custom macro to replace TypeTags for in Scala 3 / Dotty when it's necessary.
+Some people say it's too hard and recommend writing a custom macro to replace TypeTags in Scala 3 / Dotty when necessary.
 
 So, we tried to implement our own lightweight TypeTag replacement with a macro.
 
@@ -142,7 +142,7 @@ The guys who work on Scala/Dotty compilers say that it's a very complicated task
 
 --- [Georgi Krastev](https://gitter.im/scala/contributors?at=5d4f179da4efe3718ddcd501)
 
-But it's doable. We did it and our model is good enough for many practical usecases despite of being overcomplicated and having many subtle discrepancies with Scala model. So we still hope that Dotty team will consider supporting TypeTags in Scala 3. Currently our implementation supports Scala 2.12/2.13 though it's possible to port it to Dotty and we are going to do it in foreseeable future.
+But it's doable. We did it, and our model is good enough for many practical use cases despite being overcomplicated and having subtle discrepancies with the Scala model. So we still hope that the Dotty team will consider supporting TypeTags in Scala 3. Currently, our implementation supports Scala 2.12/2.13. It's possible to port it to Dotty, and we are going to do that in the foreseeable future.
 
 ## The scope of the work
 
@@ -236,12 +236,12 @@ trait HKTag[T] {
 type Wrapped[K[_]] = HKTag[{ type Arg[A] = K[A] }]
 ```
 
-No there are no more those damn type arguments and may analyse different `Wrapped` types uniformly.
+Now there are no more of those damn type arguments, and we may analyze different `Wrapped` types uniformly.
 This is outside of the scope of this post, you may find completed and working example in [distage repository](https://github.com/7mind/izumi/tree/403bbf669fd2ab6924564f821cb52c459c3be082/fundamentals/fundamentals-reflection/src/main/scala/com/github/pshirshov/izumi/fundamentals/reflection)
 
 ## Designing data model
 
-We want to use a macro to statically generate non-ambigious type identifiers. The following Scala features have to be supported:
+We want to use a macro to statically generate unambiguous type identifiers. The following Scala features have to be supported:
 
 - [Parameterized types](https://docs.scala-lang.org/tour/generic-classes.html) (Generics),
 - [Unapplied types](http://eed3si9n.com/herding-cats/Kinds.html) (type lambdas, higher-kinded types),
@@ -473,7 +473,7 @@ t match {
 ### Runtime: subtype checks
 
 Equality check is trivial --- `equals` on our model instances would work just fine.
-Subtype check is kinda complicated.
+Subtype checking is somewhat complicated.
 I wouldn't discuss it in the detail here, you may refer to my [actual implementation](https://github.com/7mind/izumi/blob/develop/fundamentals/fundamentals-reflection/src/main/scala/com/github/pshirshov/izumi/fundamentals/reflection/macrortti/LightTypeTagInheritance.scala).
 
 It's hard to understand what is even needed to perform the check.
@@ -636,6 +636,6 @@ It's possible to implement `scala-reflect`-like features with a macro. Though it
 At the same time for many enterprise developers good reflection is one of the most attractive Scala features.
 It allows us to have many positive traits of dynamic languages without giving up on type safety.
 
-I wrote this post with a hope that it may help to convince Dotty team to re-implement reflection in Scala 3.
+I wrote this post in the hope that it may help convince the Dotty team to re-implement reflection in Scala 3.
 In case it wouldn't, we, [Septimal Mind](https://7mind.io) will try to maintain our solution and port it to Dotty,
 but, as I mentioned earlier, it's not possible to make it completely correct.
